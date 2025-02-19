@@ -36,6 +36,3 @@ jobs:
           cd /home/django/project/Instagenda/frontend
           npm install
           npm run build
-
-      - name: Restart nginx
-        run: sudo service nginx restart
