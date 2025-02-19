@@ -24,12 +24,9 @@ jobs:
       - name: Configure python env for django
         run: |
           cd /home/django/project/Instagenda/api
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          python manage.py migrate
-          python manage.py collectstatic --noinput
+          pipenv install --deploy --ignore-pipfile
+          pipenv run python manage.py migrate
+          pipenv run python manage.py collectstatic --noinput
           sudo systemctl restart gunicorn
 
       - name: Build Vue.js
