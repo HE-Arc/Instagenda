@@ -25,8 +25,8 @@ jobs:
         run: |
           cd /home/django/project/Instagenda/api
           pipenv install --deploy
-          pipenv install django --deploy
-          pipenv install djangorestframework --deploy
+          pipenv install django
+          pipenv install djangorestframework
           pipenv run python manage.py migrate
           pipenv run python manage.py collectstatic --noinput
           sudo systemctl restart gunicorn
