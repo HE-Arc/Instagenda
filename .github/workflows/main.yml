@@ -10,7 +10,7 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Deploying app
+      - name: Deploy code
         run: |
           cd /home/django/project
           if [ -d "./Instagenda" ]; then
@@ -20,3 +20,23 @@ jobs:
             git clone https://github.com/HE-Arc/Instagenda.git
             cd ./Instagenda
           fi
+
+      - name: Configure python env for django
+        run: |
+          cd /home/django/project/Instagenda/api
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+          sudo systemctl restart gunicorn
+
+      - name: Build Vue.js
+        run: |
+          cd /home/django/project/Instagenda/frontend
+          npm install
+          npm run build
+
+      - name: Restart nginx
+        run: sudo systemctl restart nginx
