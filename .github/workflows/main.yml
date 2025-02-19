@@ -1,0 +1,22 @@
+name: Deploy app
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Deploying app
+        run: |
+          cd /home/django/project
+          if [ -d "./Instagenda" ]; then
+            cd ./Instagenda
+            git pull
+          else
+            git clone https://github.com/HE-Arc/Instagenda.git
+            cd ./Instagenda
+          fi
