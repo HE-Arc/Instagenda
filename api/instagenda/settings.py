@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-vbp9(0n*yqj&5vr@5u02s$cfkf#(_!*$nw8=88sy)fn2*il*co
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['instagenda.k8s.ing.he-arc.ch']
 
 
 # Application definition
