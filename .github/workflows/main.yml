@@ -27,6 +27,7 @@ jobs:
           pipenv install django
           pipenv install djangorestframework
           pipenv install gunicorn
+          pipenv install psycopg2
           pipenv run python manage.py migrate
           pipenv run python manage.py collectstatic --noinput
           sudo systemctl restart gunicorn
