@@ -42,6 +42,20 @@ ALLOWED_HOSTS = ['instagenda.k8s.ing.he-arc.ch', 'api-instagenda.k8s.ing.he-arc.
 
 CSRF_TRUSTED_ORIGINS = ['https://instagenda.k8s.ing.he-arc.ch', 'https://api-instagenda.k8s.ing.he-arc.ch', 'http://localhost:5173']
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    'https://instagenda.k8s.ing.he-arc.ch',
+    "https://api-instagenda.k8s.ing.he-arc.ch",
+]
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -51,6 +65,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework'
 ]
 
@@ -62,6 +77,7 @@ REST_FRAMEWORK = {
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
