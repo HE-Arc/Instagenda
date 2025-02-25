@@ -38,8 +38,9 @@ SECRET_KEY = 'django-insecure-vbp9(0n*yqj&5vr@5u02s$cfkf#(_!*$nw8=88sy)fn2*il*co
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['instagenda.k8s.ing.he-arc.ch', 'api-instagenda.k8s.ing.he-arc.ch']
+ALLOWED_HOSTS = ['instagenda.k8s.ing.he-arc.ch', 'api-instagenda.k8s.ing.he-arc.ch', 'localhost']
 
+CSRF_TRUSTED_ORIGINS = ['https://instagenda.k8s.ing.he-arc.ch', 'https://api-instagenda.k8s.ing.he-arc.ch', 'http://localhost:5173']
 
 # Application definition
 
@@ -52,6 +53,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
