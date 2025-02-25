@@ -41,6 +41,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['instagenda.k8s.ing.he-arc.ch', 'api-instagenda.k8s.ing.he-arc.ch', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = ['https://instagenda.k8s.ing.he-arc.ch', 'https://api-instagenda.k8s.ing.he-arc.ch', 'http://localhost:5173']
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
