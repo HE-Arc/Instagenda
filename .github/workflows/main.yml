@@ -24,12 +24,7 @@ jobs:
       - name: Configure python env for django
         run: |
           cd /home/django/project/Instagenda/api
-          pipenv install django
-          pipenv install djangorestframework
-          pipenv install gunicorn
-          pipenv install psycopg2-binary
-          pipenv install python-dotenv
-          pipenv install django-cors-headers
+          pipenv install
           pipenv run python manage.py migrate
           pipenv run python manage.py collectstatic --noinput
           sudo systemctl restart gunicorn
