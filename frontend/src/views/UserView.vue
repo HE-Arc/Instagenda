@@ -7,7 +7,7 @@ import axios from 'axios'
 const profile = ref('')
 
 async function getProfile() {
-    const response = await axios.get('/profile')
+    const response = await axios.get('/profile/')
     return response.data
 }
 
@@ -16,7 +16,7 @@ onMounted(async () => {
 })
 
 async function logout() {
-    await axios.post('/logout')
+    await axios.post('/logout/')
     profile.value = ''
     router.push('/')
 }
@@ -29,7 +29,7 @@ async function logout() {
         <QBtn label="Logout" @click="logout"/>
     </div>
 </template>
-  
+
 <style>
 @media (min-width: 1024px) {
   .user {
@@ -39,4 +39,3 @@ async function logout() {
   }
 }
 </style>
-  

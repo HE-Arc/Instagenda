@@ -15,15 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from instagendaapp.views import backend_status
-from instagendaapp.views import AuthViewSet
+from instagendaapp.views import AuthViewSet, GroupViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'groups', GroupViewSet, basename='group')
+router.register(r'', AuthViewSet, basename='auth')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('backend-status', backend_status),
-    path('login', AuthViewSet.as_view({'post': 'login'})),
-    path('profile', AuthViewSet.as_view({'get': 'profile'})),
-    path('register', AuthViewSet.as_view({'post': 'register'})),
-    path('logout', AuthViewSet.as_view({'post': 'logout'})),
+    path('backend-status/', backend_status),
+
+    path('', include(router.urls)),
 ]

@@ -6,7 +6,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from .serializers import UserSerializer
+from .serializers import UserSerializer, GroupSerializer
+from .models import Group
 
 # Create your views here.
 def backend_status(request):
@@ -48,3 +49,12 @@ class AuthViewSet(viewsets.ViewSet):
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class GroupViewSet(viewsets.ModelViewSet):
+    
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
