@@ -17,8 +17,8 @@ const login = async () => {
 const register = async () => {
   try {
     await axios.post('/register', {
-      username: username_register.value,
-      password: password_register.value
+      username: username.value,
+      password: password.value
     })
     updateCSRF()
     router.push('/')
