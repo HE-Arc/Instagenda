@@ -17,16 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from instagendaapp.views import backend_status
-from instagendaapp.views import login_view
-from instagendaapp.views import profile_view
-from instagendaapp.views import register_view
-from instagendaapp.views import logout_view
+from instagendaapp.views import AuthViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('backend-status', backend_status),
-    path('login', login_view),
-    path('profile', profile_view),
-    path('register', register_view),
-    path('logout', logout_view),
+    path('login', AuthViewSet.as_view({'post': 'login'})),
+    path('profile', AuthViewSet.as_view({'get': 'profile'})),
+    path('register', AuthViewSet.as_view({'post': 'register'})),
+    path('logout', AuthViewSet.as_view({'post': 'logout'})),
 ]
