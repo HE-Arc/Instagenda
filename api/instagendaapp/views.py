@@ -58,3 +58,27 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def add_user(self, request, pk=None):
+        group = self.get_object()
+        user_id = request.data.get('user_id')
+
+        try:
+            user = User.objects.get(id=user_id)
+            group.workers.add(user)
+            return Response({'status': 'User added'})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def remove_user(self, request, pk=None):
+        group = self.get_object()
+        user_id = request.data.get('user_id')
+
+        try:
+            user = User.objects.get(id=user_id)
+            group.workers.remove(user)
+            return Response({'status': 'User removed'})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=400)
