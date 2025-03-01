@@ -12,7 +12,7 @@ const status = ref('')
 
 const login = async () => {
   try {
-    await axios.post('/login', {
+    await axios.post('/login/', {
       username: username.value,
       password: password.value
     })
@@ -29,7 +29,7 @@ const register = async () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('/backend-status')
+    const response = await axios.get('/backend-status/')
     status.value = response.data.status
   } catch (error) {
     console.error(error)

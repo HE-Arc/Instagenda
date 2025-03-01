@@ -6,7 +6,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from .serializers import UserSerializer
+from .serializers import UserSerializer, GroupSerializer
+from .models import Group
 
 # Create your views here.
 def backend_status(request):
@@ -48,3 +49,36 @@ class AuthViewSet(viewsets.ViewSet):
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class GroupViewSet(viewsets.ModelViewSet):
+    
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def add_user(self, request, pk=None):
+        group = self.get_object()
+        user_id = request.data.get('user_id')
+
+        try:
+            user = User.objects.get(id=user_id)
+            group.workers.add(user)
+            return Response({'status': 'User added'})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def remove_user(self, request, pk=None):
+        group = self.get_object()
+        user_id = request.data.get('user_id')
+
+        try:
+            user = User.objects.get(id=user_id)
+            group.workers.remove(user)
+            return Response({'status': 'User removed'})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=400)
