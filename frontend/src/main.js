@@ -30,7 +30,7 @@ app
 .use(Quasar, {
     plugins: {},
     config: {
-        dark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+        dark: false
     },
 })
 .use(router)
