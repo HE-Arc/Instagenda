@@ -19,7 +19,16 @@ const createGroup = async () => {
     console.log("Le nom du groupe est requis !");
     return;
   }
-  isModalOpen.value = false;
+
+  // Effectuer l'appel à l'API pour créer le groupe
+  try {
+    const response = await axios.post('/groups/', { name: groupName.value });
+    console.log('Groupe créé avec succès', response.data);
+    isModalOpen.value = false;
+    router.push('/'); // Redirection après création
+  } catch (error) {
+    console.error('Erreur lors de la création du groupe :', error.response?.data || error);
+  }
 };
 </script>
 
