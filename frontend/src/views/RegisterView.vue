@@ -1,18 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { QInput, QBtn } from 'quasar'
+import { ref } from 'vue'
+import { QInput, QBtn, QImg } from 'quasar'
 import axios from 'axios'
 import router from '@/router'
 import { updateCSRF } from '@/main'
 
 const username = ref('')
 const password = ref('')
-
-const status = ref('')
-
-const login = async () => {
-  router.push('/login')
-}
 
 const register = async () => {
   try {
@@ -26,25 +20,62 @@ const register = async () => {
     console.error(error)
   }
 }
-
-onMounted(async () => {
-  try {
-    const response = await axios.get('/backend-status/')
-    status.value = response.data.status
-  } catch (error) {
-    console.error(error)
-  }
-})
 </script>
 
 <template>
   <main>
-    <h1>Backend status: {{status}}</h1>
+    <div class="fullscreen bg-white flex flex-center column container">
+      <!-- Logo -->
+      <QImg
+        src="/assets/images/logo_slogan.png"
+        class="logo"
+        fit="contain"
+      />
 
-    <h1>Register</h1>
-    <QInput v-model="username" label="Username"/>
-    <QInput v-model="password" label="Password" type="password"/>
-    <QBtn label="Register" @click="register"/>
-    <QBtn label="Login" @click="login"/>
+      <!-- Form -->
+      <div class="form-container">
+        <QInput v-model="username" label="Nom d'utilisateur" rounded outlined color="primary" class="q-mb-md"/>
+        <QInput v-model="password" label="Mot de passe" type="password" rounded outlined color="primary" class="q-mb-md"/>
+
+        <QBtn label="S'enregistrer" @click="register" class="full-width btn-register" color="primary" rounded/>
+      </div>
+
+      <!-- Login -->
+      <div class="login-container">
+        <p>Déjà un compte ? <span class="login-text" @click="router.push('/login')">Se connecter</span></p>
+      </div>
+    </div>
   </main>
 </template>
+
+
+<style scoped>
+.logo {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  display: block;
+  margin: 0vh auto 5vh;
+}
+
+.container {
+  margin-bottom: 10vh;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 450px;
+  padding: 20px;
+}
+
+.login-container {
+  width: 100%;
+  text-align: center;
+}
+
+.login-text {
+  cursor: pointer;
+  color: #F5545B;
+  text-decoration: underline;
+}
+</style>

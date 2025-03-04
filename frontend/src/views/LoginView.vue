@@ -35,8 +35,8 @@ const login = async () => {
 
       <!-- Form -->
       <div class="form-container">
-        <QInput v-model="username" label="Nom d'utilisateur" rounded outlined dense color="primary" class="q-mb-md"/>
-        <QInput v-model="password" label="Mot de passe" type="password" rounded outlined dense color="primary" class="q-mb-md"/>
+        <QInput v-model="username" label="Nom d'utilisateur" rounded outlined color="primary" class="q-mb-md"/>
+        <QInput v-model="password" label="Mot de passe" type="password" rounded outlined color="primary" class="q-mb-md"/>
 
         <QBtn label="Se connecter" @click="login" class="full-width btn-login" color="primary" rounded/>
       </div>

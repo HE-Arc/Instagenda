@@ -42,7 +42,7 @@ async function logout() {
 
   <RouterView />
 
-  <!-- Footer Section with QBtn as the link -->
+  <!-- Footer Section -->
   <footer>
     <div class="footer-content">
       <QBtn
@@ -57,7 +57,6 @@ async function logout() {
 </template>
 
 <style scoped>
-/* Make the header fixed at the top of the page */
 header {
   position: fixed;
   top: 0;
@@ -94,7 +93,6 @@ header {
   margin-left: 8px;
 }
 
-/* Make the footer fixed at the bottom of the page */
 footer {
   position: fixed;
   bottom: 0;
@@ -111,7 +109,6 @@ footer {
   justify-content: center;
 }
 
-/* Style for the About button */
 .about-btn {
   font-weight: bold;
 }
