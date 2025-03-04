@@ -19,7 +19,23 @@ async function logout() {
           <QImg src="/assets/images/logo.png" fit="contain" class="logo-img" />
         </RouterLink>
 
-        <QBtn label="Déconnexion" color="primary" rounded @click="logout" class="logout-btn" />
+        <div class="nav-buttons">
+          <QBtn
+            icon="person"
+            color="primary"
+            rounded
+            @click="router.push('/user')"
+            class="logout-btn"
+          />
+
+          <QBtn
+            icon="logout"
+            color="primary"
+            rounded
+            @click="logout"
+            class="logout-btn"
+          />
+        </div>
       </nav>
     </div>
   </header>
@@ -38,6 +54,7 @@ header {
 .wrapper {
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Ensure space between logo and buttons */
 }
 
 .logo-img {
@@ -46,9 +63,16 @@ header {
   display: block;
 }
 
+/* Align buttons to the right */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* Push buttons to the right */
+}
+
 .logout-btn {
   font-size: 14px;
   padding: 6px 12px;
-  margin-left: auto;
+  margin-left: 8px; /* Adds space between the two buttons */
 }
 </style>

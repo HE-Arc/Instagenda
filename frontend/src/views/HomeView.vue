@@ -5,6 +5,5 @@ import { QBtn } from 'quasar'
 
 <template>
   <main>
-    <QBtn label="profile" @click="router.push('/user')"/>
   </main>
 </template>

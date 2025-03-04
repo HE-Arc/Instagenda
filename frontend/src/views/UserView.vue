@@ -24,9 +24,7 @@ async function logout() {
 
 <template>
     <div class="user">
-        <h1>This is when you are logged</h1>
-        <h2>profile : {{profile}}</h2>
-        <QBtn label="Logout" @click="logout"/>
+        <h2>username : {{profile.username}}</h2>
     </div>
 </template>
 
@@ -35,6 +33,7 @@ async function logout() {
   .user {
     min-height: 100vh;
     display: flex;
+    justify-content: center;
     align-items: center;
   }
 }
