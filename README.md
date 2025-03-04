@@ -28,7 +28,7 @@ Instagenda is a project developed by students from HE-Arc engineering school in 
     ```
 3. **Start Backend Services (Run in /api)**  
    ```bash
-   Start Backend Services (Run in /api)
+   docker compose up -d
     ```
 4. **Install Python Dependencies**  
    ```bash
