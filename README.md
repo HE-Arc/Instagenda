@@ -8,39 +8,53 @@ Instagenda is a project developed by students from HE-Arc engineering school in 
 
 ### Prerequisites
 
-- Phyton 3.13.1 or higher
+- Python 3.13.1 or higher
+    - https://www.python.org/doc/
 - Node.js 18.0 or higher
+    - https://nodejs.org/fr
 - Tested with postgresql 17.4 or higher
+    - https://www.postgresql.org/
 - Docker 4.22.0 or higher
+    - https://www.docker.com/get-started/
 
 ### How to start
-
-### How to Start
 
 1. **Clone the Repository**
     ```bash
    git clone git@github.com:HE-Arc/Instagenda.git
     ```
 2. **Set Up Environment Variables**  
-   Copy `.env.example` to `.env` and update the configuration as needed.  
+   Copy `.env.exemple` to `.env` and update the configuration as needed.  
    ```bash
-   cp .env.example .env
+   cd ./api/instagenda
+   cp .env.exemple .env
+
+   cd ../../frontend
+   cp .env.exemple .env
     ```
-3. **Start Backend Services (Run in /api)**  
+3. **Start Backend Services**  
    ```bash
+   cd ./api
    docker compose up -d
     ```
 4. **Install Python Dependencies**  
    ```bash
+   pip install pipenv
    pipenv install
     ```
-5. **Run migrations and run the Backend Server (Run in /api)**  
+5. **Activate the Virtual Environment**
    ```bash
+   pipenv shell
+    ```
+6. **Run migrations and run the Backend Server**  
+   ```bash
+   cd ./api
    python manage.py migrate
    python manage.py runserver
     ```
-6. **Set Up and Start the Frontend (Run in /frontend)**  
+7. **Set Up and Start the Frontend**  
    ```bash
+    cd ./frontend
     npm i
     npm run dev
     ```
