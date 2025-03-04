@@ -42,7 +42,7 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({"message": "User logged out"}, status=status.HTTP_200_OK)
         return Response({"error": "User not logged in"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'])
     def profile(self, request):
         if not request.user or request.user.is_anonymous:
             return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
