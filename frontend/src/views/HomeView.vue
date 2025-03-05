@@ -1,13 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput, QIcon } from 'quasar';
+import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar';
 
 const isModalOpen = ref(false);
 const groupName = ref('');
 const groups = ref([]);
 const router = useRouter();
+const slideIndex = ref(0);
+const itemsPerSlide = 3;
 
 const openModal = () => {
   isModalOpen.value = true;
@@ -20,8 +22,7 @@ const createGroup = async () => {
   }
 
   try {
-    const response = await axios.post('/groups/', { name: groupName.value });
-    console.log('Groupe créé avec succès', response.data);
+    await axios.post('/groups/', { name: groupName.value });
     isModalOpen.value = false;
     groupName.value = '';
     fetchGroups();
@@ -33,7 +34,6 @@ const createGroup = async () => {
 const deleteGroup = async (groupId) => {
   try {
     await axios.delete(`/groups/${groupId}/`);
-    console.log('Groupe supprimé avec succès');
     fetchGroups();
   } catch (error) {
     console.error('Erreur lors de la suppression du groupe :', error.response?.data || error);
@@ -52,6 +52,39 @@ const fetchGroups = async () => {
 onMounted(() => {
   fetchGroups();
 });
+
+// Gère le carrousel infini avec un décalage d'un élément à la fois
+const visibleGroups = computed(() => {
+  if (groups.value.length === 0) return [];
+
+  const total = groups.value.length;
+
+  // Si on a moins de 3 groupes, on affiche uniquement ceux disponibles sans répétition
+  if (total <= itemsPerSlide) {
+    return groups.value;
+  }
+
+  // Sinon, on applique l'effet de boucle infinie
+  const result = [];
+  for (let i = 0; i < itemsPerSlide; i++) {
+    result.push(groups.value[(slideIndex.value + i) % total]);
+  }
+
+  return result;
+});
+
+// Défilement infini uniquement si on a plus de 3 groupes
+const nextSlide = () => {
+  if (groups.value.length > itemsPerSlide) {
+    slideIndex.value = (slideIndex.value + 1) % groups.value.length;
+  }
+};
+
+const prevSlide = () => {
+  if (groups.value.length > itemsPerSlide) {
+    slideIndex.value = (slideIndex.value - 1 + groups.value.length) % groups.value.length;
+  }
+};
 </script>
 
 <template>
@@ -62,23 +95,30 @@ onMounted(() => {
         <QBtn rounded label="Créer équipe" color="primary" class="login-btn" @click="openModal" />
       </div>
 
-      <div v-if="groups.length > 0">
-        <ul>
-          <li v-for="group in groups" :key="group.id" class="group-item">
-            <strong>{{ group.name }}</strong>
-            <QBtn
-              flat
-              dense
-              round
-              color="primary"
-              icon="delete"
-              @click="deleteGroup(group.id)"
-            />
-          </li>
-        </ul>
+      <!-- Carrousel des équipes -->
+      <div v-if="groups.length > 0" class="carousel-container">
+        <QBtn flat dense round icon="chevron_left" class="carousel-btn left" @click="prevSlide" />
+
+        <div class="card-container">
+          <QCard v-for="group in visibleGroups" :key="group.id" class="team-card">
+            <QCardSection>
+              <h5 class="team-name">{{ group.name }}</h5>
+            </QCardSection>
+            <QCardActions align="right">
+              <QBtn flat dense round color="negative" icon="delete" @click="deleteGroup(group.id)" />
+            </QCardActions>
+          </QCard>
+        </div>
+
+        <QBtn flat dense round icon="chevron_right" class="carousel-btn right" @click="nextSlide" />
+      </div>
+
+      <div v-else>
+        <p>Aucun groupe trouvé.</p>
       </div>
     </div>
 
+    <!-- Modale pour la création d'un groupe -->
     <QDialog v-model="isModalOpen">
       <QCard class="modal-card">
         <QCardSection>
@@ -112,15 +152,52 @@ onMounted(() => {
   height: 80vh;
 }
 
+.carousel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 75%;
+  margin: 20px auto;
+}
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  max-width: 600px;
+}
+
+.team-card {
+  width: 200px;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.team-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.carousel-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.left {
+  margin-right: 10px;
+}
+
+.right {
+  margin-left: 10px;
+}
+
 .modal-card {
   width: 400px;
   padding: 20px;
-}
-
-.group-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
 }
 </style>
