@@ -13,8 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 class GroupSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
-    workers = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
+    workers = UserSerializer(many=True, required=False)
+    owner = UserSerializer(read_only=True)
     class Meta:
         model = Group
         fields = ['id', 'name', 'description', 'owner', 'workers']

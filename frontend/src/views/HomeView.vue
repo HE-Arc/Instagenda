@@ -98,7 +98,7 @@ const prevSlide = () => {
           <QCard v-for="group in visibleGroups" :key="group.id" @click="router.push(`/groups/${group.id}`)" class="team-card">
             <div class="card-header">
               <h5 class="team-name">{{ group.name }}</h5>
-              <QBtn flat dense round color="primary" icon="delete" class="delete-btn" @click="deleteGroup(group.id)" />
+              <QBtn flat dense round color="primary" icon="delete" class="delete-btn" @click.stop="deleteGroup(group.id)" />
             </div>
           </QCard>
         </div>
