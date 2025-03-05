@@ -56,22 +56,34 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated]
 
+    def retrieve(self, request, pk=None):
+        group = self.get_object()
+        data = GroupSerializer(group).data
+        if (data["owner"]["id"] != request.user.id):
+            return Response({'error': 'You are not the owner of this group'}, status=403)
+        data["current_user"] = request.user.id
+        return Response(data)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['put'])
     def add_user(self, request, pk=None):
         group = self.get_object()
-        user_id = request.data.get('user_id')
+        user_username = request.data.get('username')
 
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(username=user_username)
+
+            if group.workers.filter(id=user.id).exists():
+                return Response({'error': 'User is already in the group'}, status=status.HTTP_400_BAD_REQUEST)
+            
             group.workers.add(user)
-            return Response({'status': 'User added'})
+            return Response({'user': UserSerializer(user).data})
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=400)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['put'])
     def remove_user(self, request, pk=None):
         group = self.get_object()
         user_id = request.data.get('user_id')
