@@ -102,6 +102,7 @@ footer {
   text-align: center;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  background: white;
 }
 
 .footer-content {

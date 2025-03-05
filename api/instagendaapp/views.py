@@ -59,6 +59,10 @@ class GroupViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def get_queryset(self):
+        user = self.request.user
+        return Group.objects.filter(owner=user)
+
     @action(detail=True, methods=['post'])
     def add_user(self, request, pk=None):
         group = self.get_object()
