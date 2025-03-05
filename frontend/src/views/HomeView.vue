@@ -89,7 +89,7 @@ const prevSlide = () => {
 
 <template>
   <main>
-    <div class="blue-container main">
+    <div class="main-container main">
       <div class="container-header">
         <h4>VOS ÉQUIPES</h4>
         <QBtn rounded label="Créer équipe" color="primary" class="login-btn" @click="openModal" />
@@ -97,24 +97,18 @@ const prevSlide = () => {
 
       <!-- Carrousel des équipes -->
       <div v-if="groups.length > 0" class="carousel-container">
-        <QBtn flat dense round icon="chevron_left" class="carousel-btn left" @click="prevSlide" />
+        <QBtn flat dense round icon="chevron_left" color="primary" class="carousel-btn left" @click="prevSlide" />
 
         <div class="card-container">
           <QCard v-for="group in visibleGroups" :key="group.id" class="team-card">
-            <QCardSection>
+            <div class="card-header">
               <h5 class="team-name">{{ group.name }}</h5>
-            </QCardSection>
-            <QCardActions align="right">
-              <QBtn flat dense round color="negative" icon="delete" @click="deleteGroup(group.id)" />
-            </QCardActions>
+              <QBtn flat dense round color="primary" icon="delete" class="delete-btn" @click="deleteGroup(group.id)" />
+            </div>
           </QCard>
         </div>
 
-        <QBtn flat dense round icon="chevron_right" class="carousel-btn right" @click="nextSlide" />
-      </div>
-
-      <div v-else>
-        <p>Aucun groupe trouvé.</p>
+        <QBtn flat dense round icon="chevron_right" color="primary" class="carousel-btn right" @click="nextSlide" />
       </div>
     </div>
 
@@ -136,10 +130,12 @@ const prevSlide = () => {
 </template>
 
 <style scoped lang="scss">
-.blue-container {
+.main-container {
   background-color: $secondary;
   border-radius: 8px;
   padding: 20px;
+  border : solid 1px;
+  border-color : $dark;
 }
 
 .container-header {
@@ -156,30 +152,51 @@ const prevSlide = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 75%;
+  width: 90%;
+  height: 75%;
   margin: 20px auto;
 }
 
 .card-container {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 40px;
-  max-width: 600px;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between; /* Pour aligner titre & poubelle */
+  align-items: center;
+  width: 100%;
 }
 
 .team-card {
-  width: 200px;
+  position: relative;
+  width: 100%;
+  height: 100%;
   padding: 15px;
   border-radius: 12px;
   text-align: center;
-  background-color: #fff;
+  background-color: $white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .team-name {
+  flex-grow: 1;
+  text-align: center;
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: $dark;
+  margin: 0 auto;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 .carousel-btn {
