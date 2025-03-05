@@ -53,18 +53,15 @@ onMounted(() => {
   fetchGroups();
 });
 
-// Gère le carrousel infini avec un décalage d'un élément à la fois
 const visibleGroups = computed(() => {
   if (groups.value.length === 0) return [];
 
   const total = groups.value.length;
 
-  // Si on a moins de 3 groupes, on affiche uniquement ceux disponibles sans répétition
   if (total <= itemsPerSlide) {
     return groups.value;
   }
 
-  // Sinon, on applique l'effet de boucle infinie
   const result = [];
   for (let i = 0; i < itemsPerSlide; i++) {
     result.push(groups.value[(slideIndex.value + i) % total]);
@@ -73,7 +70,6 @@ const visibleGroups = computed(() => {
   return result;
 });
 
-// Défilement infini uniquement si on a plus de 3 groupes
 const nextSlide = () => {
   if (groups.value.length > itemsPerSlide) {
     slideIndex.value = (slideIndex.value + 1) % groups.value.length;
@@ -95,12 +91,11 @@ const prevSlide = () => {
         <QBtn rounded label="Créer équipe" color="primary" class="login-btn" @click="openModal" />
       </div>
 
-      <!-- Carrousel des équipes -->
       <div v-if="groups.length > 0" class="carousel-container">
         <QBtn flat dense round icon="chevron_left" color="primary" class="carousel-btn left" @click="prevSlide" />
 
         <div class="card-container">
-          <QCard v-for="group in visibleGroups" :key="group.id" class="team-card">
+          <QCard v-for="group in visibleGroups" :key="group.id" @click="router.push(`/groups/${group.id}`)" class="team-card">
             <div class="card-header">
               <h5 class="team-name">{{ group.name }}</h5>
               <QBtn flat dense round color="primary" icon="delete" class="delete-btn" @click="deleteGroup(group.id)" />
@@ -112,7 +107,6 @@ const prevSlide = () => {
       </div>
     </div>
 
-    <!-- Modale pour la création d'un groupe -->
     <QDialog v-model="isModalOpen">
       <QCard class="modal-card">
         <QCardSection>
@@ -148,27 +142,27 @@ const prevSlide = () => {
   height: 80vh;
 }
 
-.carousel-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 90%;
-  height: 75%;
-  margin: 20px auto;
-}
-
 .card-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  gap: 20px;
+  height: 100%;
+}
+
+.carousel-container {
+  width: 90%;
+  height: 75%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
+  margin: 50px auto;
 }
 
 .card-header {
   display: flex;
-  justify-content: space-between; /* Pour aligner titre & poubelle */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
 }
@@ -182,6 +176,13 @@ const prevSlide = () => {
   text-align: center;
   background-color: $white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .team-name {
