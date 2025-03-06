@@ -83,6 +83,11 @@ const prevSlide = () => {
     slideIndex.value = (slideIndex.value - 1 + groups.value.length) % groups.value.length;
   }
 };
+
+const isOwner = (group) => {
+  return group.owner.id === user.value.id;
+};
+
 </script>
 
 <template>
@@ -100,7 +105,12 @@ const prevSlide = () => {
           <QCard v-for="group in visibleGroups" :key="group.id" @click="router.push(`/groups/${group.id}`)" class="team-card">
             <div class="card-header">
               <h5 class="team-name">{{ group.name }}</h5>
-              <QBtn flat dense round color="primary" icon="delete" class="delete-btn" @click.stop="deleteGroup(group.id)" />
+              <QBtn v-if="isOwner(group)" flat dense round color="primary" icon="delete"
+              class="delete-btn" @click.stop="deleteGroup(group.id)"/>
+            </div>
+
+            <div class="role-label">
+              {{ isOwner(group) ? 'Administrateur' : 'Community manager' }}
             </div>
           </QCard>
         </div>
@@ -162,13 +172,6 @@ const prevSlide = () => {
   margin: 50px auto;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
 .team-card {
   position: relative;
   width: 100%;
@@ -181,10 +184,29 @@ const prevSlide = () => {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
 
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+
   &:hover {
     transform: scale(1.03);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.role-label {
+  margin-top: auto; /* Pousse ce texte en bas */
+  font-size: 14px;
+  font-weight: bold;
+  color: $dark;
+  text-align: center;
 }
 
 .team-name {
