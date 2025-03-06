@@ -13,6 +13,7 @@ const isModalOpen = ref(false)
 const newUserName = ref('')
 const { user } = useAuth()
 const owner = ref(null)
+const title = ref(null)
 
 const isOwner = (value) => {
   return user.value.id === value?.owner?.id
@@ -24,6 +25,7 @@ const fetchGroup = async () => {
     group.value = response.data
     workers.value = response.data.workers
     owner.value = response.data.owner
+    title.value = group.value.name
   } catch (error) {
     console.error('Erreur lors de la récupération du groupe :', error.response?.data || error)
     router.push('/')
@@ -58,32 +60,36 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <main class="group-detail">
-    <div class="left-panel-wrapper">
-      <div class="left-panel">
-        <!-- Section Administrateur -->
-        <h5 class="section-title">Administrateur</h5>
-        <div v-if="owner" class="owner-item">
-          {{ owner.username }}
-        </div>
+  <main>
+    <div class="title">
+      <h1>{{title}}</h1>
+    </div>
+    <div class="group-detail">
+      <div class="left-panel-wrapper">
+        <div class="left-panel">
+          <!-- Section Administrateur -->
+          <h5 class="section-title">Administrateur</h5>
+          <div v-if="owner" class="owner-item">
+            {{ owner.username }}
+          </div>
 
-        <!-- Section Community Managers -->
-        <h5 class="section-title">Community Managers</h5>
-        <div class="workers-list">
-          <div v-for="worker in workers" :key="worker.id" class="worker-item">
-            <span>{{ worker.username }}</span>
-            <QBtn v-if="isOwner(group)" flat dense round color="red" icon="delete" @click="removeWorker(worker.id)" />
+          <!-- Section Community Managers -->
+          <h5 class="section-title">Community Managers</h5>
+          <div class="workers-list">
+            <div v-for="worker in workers" :key="worker.id" class="worker-item">
+              <span>{{ worker.username }}</span>
+              <QBtn v-if="isOwner(group)" flat dense round color="red" icon="delete" @click="removeWorker(worker.id)" />
+            </div>
           </div>
         </div>
+        <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
       </div>
-      <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
-    </div>
 
-    <div class="right-panel"></div>
+      <div class="right-panel"></div>
 
-    <QDialog v-model="isModalOpen">
-      <QCard>
-        <QCardSection>
+      <QDialog v-model="isModalOpen">
+        <QCard>
+          <QCardSection>
           <h5>Ajouter un membre</h5>
         </QCardSection>
         <QCardSection>
@@ -93,18 +99,23 @@ onBeforeMount(() => {
           <QBtn label="Ajouter" rounded color="primary" @click="addWorker" class="modal-btn" />
         </QCardActions>
       </QCard>
-    </QDialog>
+      </QDialog>
+    </div>
   </main>
 </template>
 
 <style scoped lang="scss">
+.title {
+  margin-top: 10px;
+  text-align: center;
+}
 .modal-btn {
   width: 90%;
 }
 
 .group-detail {
   display: flex;
-  height: 100vh;
+  height: 70vh;
 }
 
 .left-panel-wrapper {
@@ -113,8 +124,6 @@ onBeforeMount(() => {
   align-items: center;
   width: 25%;
   margin: 15px;
-  margin-top: 70px;
-  margin-bottom: 70px;
 }
 
 .left-panel {
