@@ -12,6 +12,7 @@ const workers = ref([])
 const isModalOpen = ref(false)
 const newUserName = ref('')
 const { user } = useAuth()
+const owner = ref(null)
 
 const isOwner = (value) => {
   return user.value.id === value?.owner?.id
@@ -22,6 +23,7 @@ const fetchGroup = async () => {
     const response = await axios.get(`/groups/${route.params.id}/`)
     group.value = response.data
     workers.value = response.data.workers
+    owner.value = response.data.owner
   } catch (error) {
     console.error('Erreur lors de la récupération du groupe :', error.response?.data || error)
     router.push('/')
@@ -59,6 +61,14 @@ onBeforeMount(() => {
   <main class="group-detail">
     <div class="left-panel-wrapper">
       <div class="left-panel">
+        <!-- Section Administrateur -->
+        <h5 class="section-title">Administrateur</h5>
+        <div v-if="owner" class="owner-item">
+          {{ owner.username }}
+        </div>
+
+        <!-- Section Community Managers -->
+        <h5 class="section-title">Community Managers</h5>
         <div class="workers-list">
           <div v-for="worker in workers" :key="worker.id" class="worker-item">
             <span>{{ worker.username }}</span>
@@ -69,8 +79,7 @@ onBeforeMount(() => {
       <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
     </div>
 
-    <div class="right-panel">
-    </div>
+    <div class="right-panel"></div>
 
     <QDialog v-model="isModalOpen">
       <QCard>
@@ -114,9 +123,9 @@ onBeforeMount(() => {
   background: $secondary;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: space-between;
   overflow-y: scroll;
-  border: 2px solid black;
+  border: 1px solid $dark;
   border-radius: 10px;
   padding: 10px;
 }
@@ -139,6 +148,16 @@ onBeforeMount(() => {
   padding: 20px;
 }
 
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 10px 0;
+  text-align: left;
+  width: 100%;
+  border-bottom: 1px solid $dark;
+  padding-bottom: 5px;
+}
+
 .workers-list {
   width: 100%;
   margin-bottom: 20px;
@@ -148,8 +167,6 @@ onBeforeMount(() => {
 .worker-item {
   display: flex;
   justify-content: space-between;
-  padding: 5px 10px;
-  border-radius: 5px;
   margin-bottom: 5px;
 }
 
