@@ -1,52 +1,58 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import axios from 'axios';
-import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar';
+import { ref, onBeforeMount } from 'vue'
+import { useRoute } from 'vue-router'
+import axios from 'axios'
+import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar'
 import router from '@/router'
+import { useAuth } from '@/components/useAuth'
 
-const route = useRoute();
-const group = ref(null);
-const workers = ref([]);
-const isModalOpen = ref(false);
-const newUserName = ref('');
+const route = useRoute()
+const group = ref(null)
+const workers = ref([])
+const isModalOpen = ref(false)
+const newUserName = ref('')
+const { user } = useAuth()
+
+const isOwner = (value) => {
+  return user.value.id === value?.owner?.id
+}
 
 const fetchGroup = async () => {
   try {
-    const response = await axios.get(`/groups/${route.params.id}/`);
-    group.value = response.data;
-    workers.value = response.data.workers;
+    const response = await axios.get(`/groups/${route.params.id}/`)
+    group.value = response.data
+    workers.value = response.data.workers
   } catch (error) {
-    console.error('Erreur lors de la récupération du groupe :', error.response?.data || error);
-    router.push('/');
+    console.error('Erreur lors de la récupération du groupe :', error.response?.data || error)
+    router.push('/')
   }
-};
+}
 
 const removeWorker = async (userId) => {
   try {
-    await axios.put(`/groups/${route.params.id}/remove_user/`, { user_id: userId });
-    workers.value = workers.value.filter(user => user.id !== userId);
+    await axios.put(`/groups/${route.params.id}/remove_user/`, { user_id: userId })
+    workers.value = workers.value.filter(user => user.id !== userId)
   } catch (error) {
-    console.error('Erreur lors de la suppression du membre :', error.response?.data || error);
+    console.error('Erreur lors de la suppression du membre :', error.response?.data || error)
   }
-};
+}
 
 const addWorker = async () => {
-  if (!newUserName.value.trim()) return;
+  if (!newUserName.value.trim()) return
 
   try {
-    const response = await axios.put(`/groups/${route.params.id}/add_user/`, { username: newUserName.value });
-    workers.value.push(response.data.user);
-    newUserName.value = '';
-    isModalOpen.value = false;
+    const response = await axios.put(`/groups/${route.params.id}/add_user/`, { username: newUserName.value })
+    workers.value.push(response.data.user)
+    newUserName.value = ''
+    isModalOpen.value = false
   } catch (error) {
-    console.error('Erreur lors de l\'ajout du membre :', error.response?.data || error);
+    console.error('Erreur lors de l\'ajout du membre :', error.response?.data || error)
   }
-};
+}
 
-onMounted(() => {
-  fetchGroup();
-});
+onBeforeMount(() => {
+  fetchGroup()
+})
 </script>
 
 <template>
@@ -56,11 +62,11 @@ onMounted(() => {
         <div class="workers-list">
           <div v-for="worker in workers" :key="worker.id" class="worker-item">
             <span>{{ worker.username }}</span>
-            <QBtn flat dense round color="red" icon="delete" @click="removeWorker(worker.id)" />
+            <QBtn v-if="isOwner(group)" flat dense round color="red" icon="delete" @click="removeWorker(worker.id)" />
           </div>
         </div>
       </div>
-      <QBtn rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
+      <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
     </div>
 
     <div class="right-panel">
