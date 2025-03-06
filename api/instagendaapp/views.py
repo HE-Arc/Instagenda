@@ -59,9 +59,12 @@ class GroupViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         group = self.get_object()
         data = GroupSerializer(group).data
-        if (data["owner"]["id"] != request.user.id):
-            return Response({'error': 'You are not the owner of this group'}, status=403)
-        data["current_user"] = request.user.id
+
+        is_owner = data["owner"]["id"] == request.user.id
+        is_worker = any(worker["id"] == request.user.id for worker in data["workers"])
+        if not (is_owner or is_worker):
+            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+        
         return Response(data)
 
     def perform_create(self, serializer):
@@ -69,12 +72,24 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Group.objects.filter(owner=user)
+        return (Group.objects.filter(owner=user) | Group.objects.filter(workers__in=[user])).distinct()
+    
+    def destroy(self, request, *args, **kwargs):
+        group = self.get_object()
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+
+        self.perform_destroy(group)
+        return Response({'status': 'Group deleted'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['put'])
     def add_user(self, request, pk=None):
         group = self.get_object()
         user_username = request.data.get('username')
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(username=user_username)
@@ -91,6 +106,9 @@ class GroupViewSet(viewsets.ModelViewSet):
     def remove_user(self, request, pk=None):
         group = self.get_object()
         user_id = request.data.get('user_id')
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(id=user_id)

@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar';
+import { useAuth } from '@/components/useAuth'
 
 const isModalOpen = ref(false);
 const groupName = ref('');
@@ -10,6 +11,7 @@ const groups = ref([]);
 const router = useRouter();
 const slideIndex = ref(0);
 const itemsPerSlide = 3;
+const { user } = useAuth();
 
 const openModal = () => {
   isModalOpen.value = true;

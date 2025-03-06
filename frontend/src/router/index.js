@@ -3,6 +3,9 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import axios from 'axios'
 import RegisterView from '@/views/RegisterView.vue'
+import { useAuth } from '@/components/useAuth'
+
+const { user } = useAuth();
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,8 +56,10 @@ router.beforeEach(async (to, from, next) => {
     try {
       const response = await axios.get('/profile');
       if (response.status === 200) {
+        user.value = response.data;
         next();
       } else {
+        user.value = null;
         next('/login');
       }
     } catch (error) {
