@@ -185,8 +185,13 @@ const isOwner = (group) => {
   cursor: pointer;
 
   display: flex;
-  flex-direction: column; /* Organise le contenu en colonne */
-  justify-content: flex-start; /* Place le header en haut */
+  flex-direction: column;
+  justify-content: flex-start;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .card-header {
