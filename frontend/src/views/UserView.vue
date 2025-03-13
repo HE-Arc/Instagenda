@@ -1,10 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { QBtn } from 'quasar'
-import router from '@/router'
 import axios from 'axios'
 
 const profile = ref('')
+const instagramAuthUrl = import.meta.env.VITE_INSTAGRAM_URL
 
 async function getProfile() {
     const response = await axios.get('/profile/')
@@ -14,27 +13,47 @@ async function getProfile() {
 onMounted(async () => {
     profile.value = await getProfile()
 })
-
-async function logout() {
-    await axios.post('/logout/')
-    profile.value = ''
-    router.push('/')
-}
 </script>
 
 <template>
     <div class="user">
-        <h2>username : {{profile.username}}</h2>
+      <div class="profile-content">
+        <h2>Username: {{ profile.username }}</h2>
+        <a :href="instagramAuthUrl" class="instagram-button">
+          <img src="/assets/images/instagram.svg" alt="Instagram" class="instagram-icon" />
+          Link with Instagram
+        </a>
+      </div>
     </div>
 </template>
 
 <style>
-@media (min-width: 1024px) {
-  .user {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.user {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-content {
+  text-align: center;
+}
+
+.instagram-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #e1306c;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.instagram-icon {
+  width: 24px;
+  height: 24px;
 }
 </style>
