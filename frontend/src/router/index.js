@@ -48,6 +48,12 @@ const router = createRouter({
       component: () => import('../views/GroupDetailView.vue'),
       meta: { requiresAuth: true }
     },
+    {
+      path: '/ig-connection',
+      name: 'ig-connection',
+      component: () => import('../views/IGConnectionView.vue'),
+      meta: { requiresAuth: true }
+    }
   ],
 })
 
