@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from .serializers import UserSerializer, GroupSerializer
-from .models import Group
+from .models import IgProfile, Group
 import requests
 from django.conf import settings
 
@@ -85,7 +85,25 @@ class IgViewSet(viewsets.ViewSet):
             long_lived_response = requests.get(settings.INSTAGRAM_LONG_TOKEN_URL, params=payload)
 
             if long_lived_response.status_code == 200:
-                return Response(long_lived_response.json(), status=status.HTTP_200_OK)
+                data = long_lived_response.json()
+                long_lived_token = data.get('access_token')
+
+                payload = {
+                    'fields': 'id',
+                    'access_token': long_lived_token
+                }
+
+                instagram_id_response = requests.get(settings.INSTAGRAM_USER_ID_URL, params=payload)
+                if instagram_id_response.status_code == 200:
+                    data = instagram_id_response.json()
+                    instagram_user_id = data.get('id')
+                    ig_profile, created = IgProfile.objects.get_or_create(user=request.user)
+                    ig_profile.instagram_access_token = long_lived_token
+                    ig_profile.instagram_user_id = instagram_user_id
+                    ig_profile.save()
+
+                    return Response(long_lived_response.json(), status=status.HTTP_200_OK)
+                return Response(instagram_id_response.json, status=instagram_id_response.status_code)
             return Response(long_lived_response.json(), status=long_lived_response.status_code)
         return Response(response.json(), status=response.status_code)
 
