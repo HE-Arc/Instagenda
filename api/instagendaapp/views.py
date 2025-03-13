@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from .serializers import UserSerializer, GroupSerializer
 from .models import Group
 import requests
+from django.conf import settings
 
 # Create your views here.
 def backend_status(request):
@@ -59,9 +60,9 @@ class IgViewSet(viewsets.ViewSet):
             return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
         code = request.data.get('code')
 
-        client_id = 'blabla'
-        client_secret = 'blabla'
-        redirect_uri = 'https://instagenda.k8s.ing.he-arc.ch/ig-connection'
+        client_id = settings.INSTAGRAM_CLIENT_ID
+        client_secret = settings.INSTAGRAM_CLIENT_SECRET
+        redirect_uri = settings.INSTAGRAM_REDIRECT_URI
         grant_type = 'authorization_code'
 
         payload = {
@@ -72,7 +73,7 @@ class IgViewSet(viewsets.ViewSet):
             'code': code
         }
 
-        response = requests.post('https://api.instagram.com/oauth/access_token', data=payload)
+        response = requests.post(settings.INSTAGRAM_SHORT_TOKEN_URL, data=payload)
 
         if response.status_code == 200:
             # redo the same to get long-lived token
@@ -81,7 +82,7 @@ class IgViewSet(viewsets.ViewSet):
                 'grant_type': "ig_exchange_token",
                 'access_token': response.json().get('access_token')
             }
-            long_lived_response = requests.get('https://graph.instagram.com/access_token', params=payload)
+            long_lived_response = requests.get(settings.INSTAGRAM_LONG_TOKEN_URL, params=payload)
 
             if long_lived_response.status_code == 200:
                 return Response(long_lived_response.json(), status=status.HTTP_200_OK)

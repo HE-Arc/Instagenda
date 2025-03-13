@@ -25,6 +25,14 @@ DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
+# get INSTAGRAM info from .env file
+INSTAGRAM_CLIENT_ID = os.getenv("INSTAGRAM_CLIENT_ID")
+INSTAGRAM_CLIENT_SECRET = os.getenv("INSTAGRAM_CLIENT_SECRET")
+INSTAGRAM_REDIRECT_URI = os.getenv("INSTAGRAM_REDIRECT_URI")
+INSTAGRAM_SHORT_TOKEN_URL = os.getenv("INSTAGRAM_SHORT_TOKEN_URL")
+INSTAGRAM_LONG_TOKEN_URL = os.getenv("INSTAGRAM_LONG_TOKEN_URL")
+INSTAGRAM_REFRESH_TOKEN_URL = os.getenv("INSTAGRAM_REFRESH_TOKEN_URL")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
