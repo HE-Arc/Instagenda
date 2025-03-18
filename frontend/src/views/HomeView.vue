@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar';
-import { useAuth } from '@/components/useAuth'
+import { useAuth, useErrorMessage } from '@/components/store'
 
 const isModalOpen = ref(false);
 const groupName = ref('');
@@ -12,6 +12,7 @@ const router = useRouter();
 const slideIndex = ref(0);
 const itemsPerSlide = 3;
 const { user } = useAuth();
+const { errorMessage } = useErrorMessage()
 
 const openModal = () => {
   isModalOpen.value = true;
@@ -19,7 +20,7 @@ const openModal = () => {
 
 const createGroup = async () => {
   if (groupName.value.trim() === '') {
-    console.log("Le nom du groupe est requis !");
+    errorMessage.value = "Le nom du groupe est requis !";
     return;
   }
 
@@ -29,7 +30,7 @@ const createGroup = async () => {
     groupName.value = '';
     fetchGroups();
   } catch (error) {
-    console.error('Erreur lors de la création du groupe :', error.response?.data || error);
+    errorMessage.value = 'Erreur lors de la création du groupe : ' + error.response?.data.error || error;
   }
 };
 
@@ -38,7 +39,7 @@ const deleteGroup = async (groupId) => {
     await axios.delete(`/groups/${groupId}/`);
     fetchGroups();
   } catch (error) {
-    console.error('Erreur lors de la suppression du groupe :', error.response?.data || error);
+    errorMessage.value = 'Erreur lors de la suppression du groupe : ' + error.response?.data.error || error;
   }
 };
 
@@ -47,7 +48,7 @@ const fetchGroups = async () => {
     const response = await axios.get('/groups/');
     groups.value = response.data;
   } catch (error) {
-    console.error('Erreur lors de la récupération des groupes :', error.response?.data || error);
+    errorMessage.value = 'Erreur lors de la récupération des groupes : ' + error.response?.data.error || error;
   }
 };
 

@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar'
 import router from '@/router'
-import { useAuth } from '@/components/useAuth'
+import { useAuth, useErrorMessage } from '@/components/store'
 
 const route = useRoute()
 const group = ref(null)
@@ -14,6 +14,7 @@ const newUserName = ref('')
 const { user } = useAuth()
 const owner = ref(null)
 const title = ref(null)
+const { errorMessage } = useErrorMessage()
 
 const isOwner = (value) => {
   return user.value.id === value?.owner?.id
@@ -27,7 +28,7 @@ const fetchGroup = async () => {
     owner.value = response.data.owner
     title.value = group.value.name
   } catch (error) {
-    console.error('Erreur lors de la récupération du groupe :', error.response?.data || error)
+    errorMessage.value = 'Erreur lors de la récupération du groupe : ' + error.response?.data.error || error
     router.push('/')
   }
 }
@@ -37,7 +38,7 @@ const removeWorker = async (userId) => {
     await axios.put(`/groups/${route.params.id}/remove_user/`, { user_id: userId })
     workers.value = workers.value.filter(user => user.id !== userId)
   } catch (error) {
-    console.error('Erreur lors de la suppression du membre :', error.response?.data || error)
+    errorMessage.value = 'Erreur lors de la suppression du membre : ' + error.response?.data.error || error
   }
 }
 
@@ -50,7 +51,8 @@ const addWorker = async () => {
     newUserName.value = ''
     isModalOpen.value = false
   } catch (error) {
-    console.error('Erreur lors de l\'ajout du membre :', error.response?.data || error)
+    errorMessage.value = 'Erreur lors de l\'ajout du membre : ' + error.response?.data.error || error
+    isModalOpen.value = false
   }
 }
 

@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import { QBtn, QImg } from 'quasar'
 import axios from 'axios'
 import router from '@/router'
+import ErrorBanner from '@/components/ErrorBanner.vue'
 
 async function logout() {
     await axios.post('/logout/')
@@ -39,6 +40,8 @@ async function logout() {
       </nav>
     </div>
   </header>
+
+  <ErrorBanner />
 
   <RouterView />
 

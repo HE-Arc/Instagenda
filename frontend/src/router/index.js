@@ -3,7 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import axios from 'axios'
 import RegisterView from '@/views/RegisterView.vue'
-import { useAuth } from '@/components/useAuth'
+import { useAuth } from '@/components/store'
 
 const { user } = useAuth();
 

@@ -1,17 +1,3 @@
-<template>
-</template>
-
-<style>
-@media (min-width: 1024px) {
-.about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-}
-</style>
-
 <script setup>
 import axios from 'axios';
 import { onMounted } from 'vue';
@@ -20,8 +6,6 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const code = route.query.code;
-
-console.log(code)
 
 async function postCode() {
     const response = await axios.post('/ig/connection/', { code: code })
@@ -34,4 +18,3 @@ onMounted(async () => {
     router.push('/user')
 })
 </script>
-  

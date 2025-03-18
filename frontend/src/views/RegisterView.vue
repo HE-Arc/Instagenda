@@ -4,9 +4,11 @@ import { QInput, QBtn, QImg } from 'quasar'
 import axios from 'axios'
 import router from '@/router'
 import { updateCSRF } from '@/main'
+import { useErrorMessage } from '@/components/store'
 
 const username = ref('')
 const password = ref('')
+const { errorMessage } = useErrorMessage()
 
 const register = async () => {
   try {
@@ -17,7 +19,7 @@ const register = async () => {
     updateCSRF()
     router.push('/')
   } catch (error) {
-    console.error(error)
+    errorMessage.value = 'Erreur lors de l\'enregistrement : ' + error.response?.data.error || error
   }
 }
 </script>
