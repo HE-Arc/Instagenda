@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from .serializers import UserSerializer, GroupSerializer
-from .models import IgProfile, Group
+from .models import IgProfile, Group, Post
 import requests
 from django.conf import settings
 
@@ -173,3 +173,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             return Response({'status': 'User removed'})
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=400)
+
+class PostViewSet(viewsets.ModelViewSet):
+
+    queryset = Post.objects.all()
