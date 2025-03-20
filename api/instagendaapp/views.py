@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -125,7 +125,10 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        owner = self.request.user
+        if not hasattr(owner, 'profile'):
+            raise serializers.ValidationError({'error': 'User does not have an associated Instagram profile'})
+        serializer.save(owner=owner)
 
     def get_queryset(self):
         user = self.request.user
