@@ -59,6 +59,21 @@ const addWorker = async () => {
 onBeforeMount(() => {
   fetchGroup()
 })
+
+const createPost = async () => {
+  try {
+    let response = await axios.post('/posts/', {
+      name: "test",
+      caption: "test de post",
+      image_url: "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x2.jpg",
+      date_publication: "2025-03-23 13:55",
+      group_owner_id: group.value.id });
+    console.log(response.data)
+  } catch (error) {
+    console.log(error.response.data)
+    errorMessage.value = 'Erreur lors de la création du groupe : ' + error.response?.data.error || error;
+  }
+};
 </script>
 
 <template>
@@ -87,7 +102,9 @@ onBeforeMount(() => {
         <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
       </div>
 
-      <div class="right-panel"></div>
+      <div class="right-panel">
+        <QBtn label="Créer" color="primary" @click="createPost" />
+      </div>
 
       <QDialog v-model="isModalOpen">
         <QCard>
