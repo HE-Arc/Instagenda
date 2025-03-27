@@ -42,6 +42,9 @@ def publish_post(post_id):
             }
         )
 
+        post.status = "published"
+        post.save()
+
         return publish_response.json()
 
     except Post.DoesNotExist:
