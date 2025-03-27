@@ -10,10 +10,6 @@ def publish_post(post_id):
         print("task executing...")
         post = Post.objects.get(id=post_id)
 
-        # Vérifier si le post n'a pas été supprimé ou s'il est déjà publié
-        # if post.date_publication > now():
-        #     return {"error": f"Tentative de publication avant l'heure prévue {post.date_publication} - {now()}"}
-
         # Récupérer l'access token de l'utilisateur
         instagram_user_id = post.group_owner.owner.profile.instagram_user_id
         access_token = post.group_owner.owner.profile.instagram_access_token
