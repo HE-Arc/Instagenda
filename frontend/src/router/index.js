@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import LoginView from '@/views/LoginView.vue'
 import axios from 'axios'
-import RegisterView from '@/views/RegisterView.vue'
 import { useAuth } from '@/components/store'
 
 const { user } = useAuth();
@@ -13,13 +10,13 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: LoginView,
+      component: () => import('../views/LoginView.vue'),
       meta: {requiresGuest: true}
     },
     {
       path: '/register',
       name: 'register',
-      component: RegisterView,
+      component: () => import('../views/RegisterView.vue'),
       meta: {requiresGuest: true}
     },
     {
@@ -39,7 +36,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('../views/HomeView.vue'),
       meta: {requiresAuth: true}
     },
     {
@@ -52,6 +49,12 @@ const router = createRouter({
       path: '/ig-connection',
       name: 'ig-connection',
       component: () => import('../views/IGConnectionView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/create-post/:id',
+      name: 'create-post',
+      component: () => import('../views/CreatePostView.vue'),
       meta: { requiresAuth: true }
     }
   ],

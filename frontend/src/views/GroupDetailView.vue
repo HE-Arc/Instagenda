@@ -15,6 +15,7 @@ const { user } = useAuth()
 const owner = ref(null)
 const title = ref(null)
 const { errorMessage } = useErrorMessage()
+const posts = ref([])
 
 const isOwner = (value) => {
   return user.value.id === value?.owner?.id
@@ -27,6 +28,7 @@ const fetchGroup = async () => {
     workers.value = response.data.workers
     owner.value = response.data.owner
     title.value = group.value.name
+    posts.value = response.data.owned_posts
   } catch (error) {
     errorMessage.value = 'Erreur lors de la récupération du groupe : ' + error.response?.data.error || error
     router.push('/')
@@ -54,6 +56,10 @@ const addWorker = async () => {
     errorMessage.value = 'Erreur lors de l\'ajout du membre : ' + error.response?.data.error || error
     isModalOpen.value = false
   }
+}
+
+const createPost = async () => {
+  router.push("/create-post/" + group.value.id)
 }
 
 onBeforeMount(() => {
@@ -87,7 +93,21 @@ onBeforeMount(() => {
         <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
       </div>
 
-      <div class="right-panel"></div>
+      <div class="right-panel">
+        <div class="header">
+          <QBtn rounded label="New post" color="primary" class="create-post-btn" @click="createPost" />
+        </div>
+        <div class="section-title">Publications</div>
+        <div class="posts-list">
+          <div v-for="post in posts" :key="post.id" class="post-item">
+            <h5>{{ post.title }}</h5>
+            <p>{{ post.content }}</p>
+          </div>
+          <div v-if="!posts" class="no-posts">
+            <p>Aucune publication disponible.</p>
+          </div>
+        </div>
+      </div>
 
       <QDialog v-model="isModalOpen">
         <QCard>
@@ -157,6 +177,8 @@ onBeforeMount(() => {
 .right-panel {
   width: 75%;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
@@ -185,5 +207,18 @@ onBeforeMount(() => {
   width: 100%;
   text-align: center;
   margin-top: 20px;
+}
+
+.create-post-btn {
+  align-self: flex-start;
+  margin-left: auto;
+}
+
+.header {
+  align-self: flex-start;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 </style>
