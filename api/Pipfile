@@ -11,6 +11,9 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 django-cors-headers = "*"
 requests = "*"
+celery = "*"
+redis ="*"
+pytz = "*"
 
 [dev-packages]
 

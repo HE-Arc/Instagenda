@@ -28,11 +28,18 @@ DB_PORT = os.getenv('DB_PORT')
 # get INSTAGRAM info from .env file
 INSTAGRAM_CLIENT_ID = os.getenv("INSTAGRAM_CLIENT_ID")
 INSTAGRAM_CLIENT_SECRET = os.getenv("INSTAGRAM_CLIENT_SECRET")
+INSTAGRAM_API_URL = os.getenv("INSTAGRAM_API_URL")
 INSTAGRAM_REDIRECT_URI = os.getenv("INSTAGRAM_REDIRECT_URI")
 INSTAGRAM_SHORT_TOKEN_URL = os.getenv("INSTAGRAM_SHORT_TOKEN_URL")
 INSTAGRAM_LONG_TOKEN_URL = os.getenv("INSTAGRAM_LONG_TOKEN_URL")
 INSTAGRAM_USER_ID_URL = os.getenv("INSTAGRAM_USER_ID_URL")
 INSTAGRAM_REFRESH_TOKEN_URL = os.getenv("INSTAGRAM_REFRESH_TOKEN_URL")
+
+# celery and redis config
+CELERY_BROKER_URL = "redis://localhost:6379/0"  # Ou l'URL de ton broker Redis
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

@@ -6,10 +6,15 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from .serializers import UserSerializer, GroupSerializer
+from .serializers import UserSerializer, GroupSerializer, PostSerializer
 from .models import IgProfile, Group, Post
 import requests
 from django.conf import settings
+from django.utils.timezone import make_aware
+from datetime import datetime
+from celery import current_app
+from .tasks import publish_post
+import pytz
 
 # Create your views here.
 def backend_status(request):
@@ -177,3 +182,27 @@ class GroupViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
 
     queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        name = self.request.data.get("name")
+        caption = self.request.data.get("caption")
+        image_url = self.request.data.get("image_url")
+        date_str = self.request.data.get("date_publication")
+        group_id = self.request.data.get("group_id")
+
+        date_publication_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
+        date_publication = date_publication_aw.astimezone(pytz.utc)
+
+        group_owner = Group.objects.get(id=group_id)
+
+        post = serializer.save(name=name, caption=caption, group_owner=group_owner, image_url=image_url, date_publication=date_publication)
+
+        task = publish_post.apply_async(
+            args=[post.id],
+            eta=date_publication
+        )
+
+        post.celery_task_id = task.id
+        post.save()

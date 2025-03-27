@@ -65,6 +65,7 @@ const createPost = async () => {
 onBeforeMount(() => {
   fetchGroup()
 })
+
 </script>
 
 <template>
