@@ -66,7 +66,7 @@ const createPost = async () => {
       name: "test",
       caption: "test de post",
       image_url: "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x2.jpg",
-      date_publication: "2025-03-23 13:55",
+      date_publication: "2025-03-27 11:19",
       group_owner_id: group.value.id });
     console.log(response.data)
   } catch (error) {

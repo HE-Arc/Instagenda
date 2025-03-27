@@ -14,19 +14,19 @@ def publish_post(post_id):
         # if post.date_publication > now():
         #     return {"error": f"Tentative de publication avant l'heure prévue {post.date_publication} - {now()}"}
 
-        # Récupérer l'access token de l'utilisateur (supposons qu'on l'ait stocké dans un autre modèle)
-        ig_profile = post.group_owner.owner.profile  # Supposons qu'on ait une relation avec le profil Instagram
+        # Récupérer l'access token de l'utilisateur
+        ig_profile = post.group_owner.owner.profile
         access_token = ig_profile.instagram_access_token
 
-        if not access_token:
+        if not (access_token or ig_profile):
             return {"error": "Aucun access_token trouvé pour cet utilisateur"}
 
         # Étape 1 : Créer un conteneur média
         media_response = requests.post(
             f"{settings.INSTAGRAM_API_URL}/{ig_profile.instagram_user_id}/media",
             data={
-                "image_url": post.image_url,  # Récupéré en live depuis la DB
-                "caption": post.caption,  # Récupéré en live depuis la DB
+                "image_url": post.image_url,
+                "caption": post.caption,
                 "access_token": access_token
             }
         )

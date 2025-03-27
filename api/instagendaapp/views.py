@@ -190,12 +190,12 @@ class PostViewSet(viewsets.ModelViewSet):
         caption = self.request.data.get("caption")
         image_url = self.request.data.get("image_url")
         date_str = self.request.data.get("date_publication")
-        group_owner_id = self.request.data.get("group_owner_id")
+        group_id = self.request.data.get("group_id")
 
         date_publication_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
         date_publication = date_publication_aw.astimezone(pytz.utc)
 
-        group_owner = Group.objects.get(id=group_owner_id)
+        group_owner = Group.objects.get(id=group_id)
 
         post = serializer.save(name=name, caption=caption, group_owner=group_owner, image_url=image_url, date_publication=date_publication)
 
