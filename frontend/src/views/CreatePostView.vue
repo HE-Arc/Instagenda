@@ -3,6 +3,7 @@ import { QBtn, QInput, QDate, QTime } from 'quasar';
 import { ref } from 'vue';
 import { useErrorMessage } from '@/components/store'
 import { useRoute } from 'vue-router';
+import axios from 'axios';
 
 const postName = ref('');
 const postContent = ref('');
@@ -21,31 +22,30 @@ const postPost = async () => {
   const date = new Date(formattedDateTime);
   const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ').replace(/:\d{2}$/, '');
 
+  console.log(formattedDate);
+
   const now = new Date();
   if (date < now) {
     errorMessage.value = 'La date doit être dans le futur !';
     return;
   }
 
-  const postData = {
-    name: postName.value,
-    caption: postContent.value,
-    image_url: postImage.value,
-    date_publication: formattedDate,
-    group_id: route.params.id,
-  };
-
-  console.log('Post data:', postData);
-
   try {
-    // await axios.post('/posts/', postData);
+    let response = await axios.post('/posts/', {
+      name: postName.value,
+      caption: postContent.value,
+      image_url: postImage.value,
+      date_publication: formattedDate,
+      group_id: route.params.id,
+    });
+    console.log(response.data)
     postName.value = '';
     postContent.value = '';
     postImage.value = '';
     postDate.value = '';
     postTime.value = '';
   } catch (error) {
-    console.error('Erreur lors de la création du post :', error);
+    errorMessage.value = 'Erreur lors de la création du post : ' + error.response?.data.error || error;
   }
 };
 </script>
