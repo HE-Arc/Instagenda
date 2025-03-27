@@ -15,15 +15,15 @@ def publish_post(post_id):
         #     return {"error": f"Tentative de publication avant l'heure prévue {post.date_publication} - {now()}"}
 
         # Récupérer l'access token de l'utilisateur
-        ig_profile = post.group_owner.owner.profile
-        access_token = ig_profile.instagram_access_token
+        instagram_user_id = post.group_owner.owner.profile.instagram_user_id
+        access_token = post.group_owner.owner.profile.instagram_access_token
 
-        if not (access_token or ig_profile):
+        if not access_token or not instagram_user_id:
             return {"error": "Aucun access_token trouvé pour cet utilisateur"}
 
         # Étape 1 : Créer un conteneur média
         media_response = requests.post(
-            f"{settings.INSTAGRAM_API_URL}/{ig_profile.instagram_user_id}/media",
+            f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media",
             data={
                 "image_url": post.image_url,
                 "caption": post.caption,
@@ -39,7 +39,7 @@ def publish_post(post_id):
 
         # Étape 2 : Publier le conteneur
         publish_response = requests.post(
-            f"{settings.INSTAGRAM_API_URL}/{ig_profile.instagram_user_id}/media_publish",
+            f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media_publish",
             data={
                 "creation_id": container_id,
                 "access_token": access_token
