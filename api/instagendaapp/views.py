@@ -206,3 +206,6 @@ class PostViewSet(viewsets.ModelViewSet):
 
         post.celery_task_id = task.id
         post.save()
+        
+    def list(self, request, *args, **kwargs):
+        return Response({'detail': 'Accès à cet endpoint non autorisé.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)

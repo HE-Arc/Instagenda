@@ -28,7 +28,7 @@ const fetchGroup = async () => {
     workers.value = response.data.workers
     owner.value = response.data.owner
     title.value = group.value.name
-    posts.value = response.data.owned_posts
+    posts.value = response.data.posts
   } catch (error) {
     errorMessage.value = 'Erreur lors de la récupération du groupe : ' + error.response?.data.error || error
     router.push('/')
@@ -60,6 +60,19 @@ const addWorker = async () => {
 
 const createPost = async () => {
   router.push("/create-post/" + group.value.id)
+}
+
+const editPost = async (postId) => {
+  router.push("/update-post/" + postId)
+}
+
+const deletePost = async (postId) => {
+  try {
+    await axios.delete(`/posts/${postId}/`)
+    posts.value = posts.value.filter(post => post.id !== postId)
+  } catch (error) {
+    errorMessage.value = 'Erreur lors de la suppression du post : ' + error.response?.data.error || error
+  }
 }
 
 onBeforeMount(() => {
@@ -101,8 +114,14 @@ onBeforeMount(() => {
         <div class="section-title">Publications</div>
         <div class="posts-list">
           <div v-for="post in posts" :key="post.id" class="post-item">
-            <h5>{{ post.title }}</h5>
-            <p>{{ post.content }}</p>
+            <div class="post-content">
+              <h5>{{ post.name }}</h5>
+              <p>{{ post.caption }}</p>
+            </div>
+            <div class="post-actions">
+              <QBtn flat dense round icon="edit" @click="editPost(post.id)" />
+              <QBtn flat dense round color="red" icon="delete" @click="deletePost(post.id)" />
+            </div>
           </div>
           <div v-if="!posts" class="no-posts">
             <p>Aucune publication disponible.</p>
@@ -221,5 +240,27 @@ onBeforeMount(() => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+}
+
+.post-item {
+  background: $secondary;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: $secondary;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.post-actions {
+  display: flex;
+  gap: 5px;
 }
 </style>

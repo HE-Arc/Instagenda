@@ -6,6 +6,7 @@ class IgProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = IgProfile
         fields = ['instagram_access_token', 'instagram_user_id']
+        extra_kwargs = {'instagram_access_token': {'write_only': True}, 'instagram_user_id': {'write_only': True}}
 
 class UserSerializer(serializers.ModelSerializer):
     profile = IgProfileSerializer(read_only=True)
@@ -21,12 +22,16 @@ class UserSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     workers = UserSerializer(many=True, required=False)
     owner = UserSerializer(read_only=True)
+    posts = serializers.SerializerMethodField()
     class Meta:
         model = Group
-        fields = ['id', 'name', 'description', 'owner', 'workers']
+        fields = ['id', 'name', 'description', 'owner', 'workers', 'posts']
+
+    def get_posts(self, obj):
+        posts = Post.objects.filter(group_owner=obj)
+        return PostSerializer(posts, many=True).data
 
 class PostSerializer(serializers.ModelSerializer):
-    group_owner = GroupSerializer(read_only=True)
     class Meta:
         model = Post
         fields = [
