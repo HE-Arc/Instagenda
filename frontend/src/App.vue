@@ -88,6 +88,7 @@ header {
   display: flex;
   align-items: center;
   margin-left: auto;
+  height: 7vh;
 }
 
 .logout-btn {
