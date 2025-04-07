@@ -17,13 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from instagendaapp.views import backend_status
-from instagendaapp.views import AuthViewSet, GroupViewSet, IgViewSet
+from instagendaapp.views import AuthViewSet, GroupViewSet, IgViewSet, UserViewSet
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'groups', GroupViewSet, basename='group')
 router.register(r'', AuthViewSet, basename='auth')
 router.register(r'ig', IgViewSet, basename='ig')
+router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
