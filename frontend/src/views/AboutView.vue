@@ -32,13 +32,13 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 
 .container {
   width: 80vw;
   margin: 0 auto;
   border-radius: 10px;
-  background-color: #f8f9fa;
+  background-color: $secondary;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   padding: 2rem;
 }
@@ -47,13 +47,13 @@ h1 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   text-align: center;
-  color: #222;
+  color: $dark;
 }
 
 h2 {
   margin-top: 2rem;
   font-size: 1.5rem;
-  color: #444;
+  color: $dark;
 }
 
 ul {

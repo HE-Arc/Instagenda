@@ -110,13 +110,18 @@ onBeforeMount(() => {
 .title {
   text-align: center;
 }
+
+.title h1 {
+  font-size: 3rem;
+}
+
 .modal-btn {
   width: 90%;
 }
 
 .group-detail {
   display: flex;
-  height: 70vh;
+  height: 65vh;
 }
 
 .left-panel-wrapper {

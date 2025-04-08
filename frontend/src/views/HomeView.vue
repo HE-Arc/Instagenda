@@ -142,7 +142,7 @@ const isOwner = (group) => {
   background-color: $secondary;
   border-radius: 8px;
   padding: 20px;
-  border : solid 1px;
+  border : solid 0.5px;
   border-color : $dark;
 }
 
