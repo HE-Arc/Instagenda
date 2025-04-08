@@ -127,10 +127,6 @@ const savePassword = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-  margin-top: 15vh;
-  margin-bottom: 10vh;
 }
 
 .card {
