@@ -93,7 +93,7 @@ const isOwner = (group) => {
 
 <template>
   <main>
-    <div class="main-container main">
+    <div class="main-container">
       <div class="container-header">
         <h4>VOS ÉQUIPES</h4>
         <QBtn rounded label="Créer équipe" color="primary" class="login-btn" @click="openModal" />
@@ -138,6 +138,7 @@ const isOwner = (group) => {
 
 <style scoped lang="scss">
 .main-container {
+  height: 70vh;
   background-color: $secondary;
   border-radius: 8px;
   padding: 20px;
@@ -148,11 +149,6 @@ const isOwner = (group) => {
 .container-header {
   display: flex;
   justify-content: space-between;
-}
-
-.main {
-  margin-top: 20px;
-  height: 80vh;
 }
 
 .card-container {

@@ -108,7 +108,6 @@ onBeforeMount(() => {
 
 <style scoped lang="scss">
 .title {
-  margin-top: 10px;
   text-align: center;
 }
 .modal-btn {

@@ -6,122 +6,85 @@ import router from '@/router'
 import ErrorBanner from '@/components/ErrorBanner.vue'
 
 async function logout() {
-    await axios.post('/logout/')
-    router.push('/login')
+  await axios.post('/logout/')
+  router.push('/login')
 }
 </script>
 
 <template>
-  <header>
-    <div>
-      <nav class="wrapper">
-        <!-- Logo -->
-        <RouterLink to="/" class="logo">
-          <QImg src="/assets/images/logo.png" fit="contain" class="logo-img" />
-        </RouterLink>
+  <header class="app-header">
+    <nav class="wrapper">
+      <RouterLink to="/" class="logo">
+        <QImg src="/assets/images/logo.png" fit="contain" class="logo-img" />
+      </RouterLink>
 
-        <div class="nav-buttons">
-          <QBtn
-            icon="person"
-            color="primary"
-            rounded
-            @click="router.push('/user')"
-            class="logout-btn"
-          />
-
-          <QBtn
-            icon="logout"
-            color="primary"
-            rounded
-            @click="logout"
-            class="logout-btn"
-          />
-        </div>
-      </nav>
-    </div>
+      <div class="nav-buttons">
+        <QBtn icon="person" color="primary" rounded @click="router.push('/user')" />
+        <QBtn icon="logout" color="primary" rounded @click="logout" />
+      </div>
+    </nav>
   </header>
 
   <ErrorBanner />
 
-  <RouterView />
+  <main class="app-main">
+    <RouterView />
+  </main>
 
-  <!-- Footer Section -->
-  <footer>
-    <div class="footer-content">
-      <QBtn
-        to="/about"
-        label="A propos"
-        color="primary"
-        flat
-        class="about-btn"
-      />
-    </div>
+  <footer class="app-footer">
+    <QBtn to="/about" label="À propos" color="primary" flat class="about-btn" />
   </footer>
 </template>
 
 <style scoped>
-header {
+.app-header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 1rem 2rem;
+  height: 70px;
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  padding: 0 2rem;
 }
 
 .wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 100%;
 }
 
 .logo-img {
-  height: auto;
   width: 150px;
-  display: block;
+  height: auto;
 }
 
-/* Align buttons to the right */
 .nav-buttons {
   display: flex;
   align-items: center;
-  margin-left: auto;
-  height: 7vh;
+  gap: 12px;
 }
 
-.logout-btn {
-  font-size: 14px;
-  padding: 6px 12px;
-  margin-left: 8px;
-}
-
-footer {
+.app-footer {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 1rem;
-  text-align: center;
+  height: 70px;
+  background: white;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
-  background: white;
-}
-
-.footer-content {
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.about-btn {
-  font-weight: bold;
-}
-
-/* Main content area should take available space between header and footer */
-main {
-  padding: 4rem 2rem 4rem; /* Adds padding to the top and bottom to prevent overlap with fixed header/footer */
-  min-height: calc(100vh - 8rem); /* Makes sure the content fills the space between header and footer */
-  overflow-y: auto; /* Enable scrolling for content */
+/* MAIN */
+.app-main {
+  padding: 20px;
+  margin-top: 70px;
+  margin-bottom: 70px;
 }
 </style>
