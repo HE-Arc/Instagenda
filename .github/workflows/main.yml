@@ -33,7 +33,7 @@ jobs:
       - name: Restart Celery worker
         run: |
           pkill -f 'celery'
-          sudo systemctl restart celery
+          nohup /home/django/.local/share/virtualenvs/api-e7lWkwzq/bin/celery -A instagenda worker &
 
       - name: Build Vue.js
         run: |
