@@ -6,7 +6,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from .serializers import UserSerializer, GroupSerializer, PostSerializer
+from .serializers import UserSerializer, GroupSerializer, PostSerializer, ChangePasswordSerializer
 from .models import IgProfile, Group, Post
 import requests
 from django.conf import settings
@@ -111,6 +111,39 @@ class IgViewSet(viewsets.ViewSet):
                 return Response(instagram_id_response.json, status=instagram_id_response.status_code)
             return Response(long_lived_response.json(), status=long_lived_response.status_code)
         return Response(response.json(), status=response.status_code)
+    
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, pk=None):
+        user = self.get_object()
+        data = UserSerializer(user).data
+
+        if user.id != request.user.id:
+            return Response({'error': 'You are not allowed to view this user'}, status=status.HTTP_403_FORBIDDEN)
+        
+        return Response(data)
+    
+    def update(self, request, pk=None):
+        """ Met à jour l'utilisateur (sans changer le mot de passe) """
+        user = request.user  # Récupère l'utilisateur connecté
+
+        serializer = UserSerializer(user, data=request.data, partial=True)  # Permet une mise à jour partielle
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def change_password(self, request):
+        """ Change le mot de passe de l'utilisateur """
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Mot de passe mis à jour avec succès."}, status=status.HTTP_200_OK)
 
 class GroupViewSet(viewsets.ModelViewSet):
     
@@ -180,7 +213,6 @@ class GroupViewSet(viewsets.ModelViewSet):
             return Response({'error': 'User not found'}, status=400)
 
 class PostViewSet(viewsets.ModelViewSet):
-
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
