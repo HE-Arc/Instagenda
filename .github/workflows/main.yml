@@ -21,12 +21,6 @@ jobs:
             cd ./Instagenda
           fi
 
-      - name: Build Vue.js
-        run: |
-          cd /home/django/project/Instagenda/frontend
-          npm install
-          npm run build
-
       - name: Configure python env for django
         run: |
           cd /home/django/project/Instagenda/api
@@ -39,3 +33,9 @@ jobs:
       - name: Restart Celery worker
         run: |
           sudo systemctl restart celery
+
+      - name: Build Vue.js
+        run: |
+          cd /home/django/project/Instagenda/frontend
+          npm install
+          npm run build
