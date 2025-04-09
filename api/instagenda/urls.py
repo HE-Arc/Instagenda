@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from instagendaapp.views import backend_status
 from instagendaapp.views import AuthViewSet, GroupViewSet, IgViewSet, PostViewSet, UserViewSet
 
@@ -33,3 +35,7 @@ urlpatterns = [
     path('backend-status/', backend_status),
     path('', include(router.urls)),
 ]
+
+# This is for serving static files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

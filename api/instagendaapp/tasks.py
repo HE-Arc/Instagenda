@@ -2,7 +2,7 @@ import requests
 from celery import shared_task
 from django.utils.timezone import now
 from django.conf import settings
-from .models import Post
+from .models import Post, PostImage
 
 @shared_task
 def publish_post(post_id):
@@ -16,24 +16,55 @@ def publish_post(post_id):
 
         if not access_token or not instagram_user_id:
             return {"error": "Aucun access_token trouvé pour cet utilisateur"}
+        
+        # Récupérer les images du post
+        images = PostImage.objects.filter(post=post)
 
-        # Étape 1 : Créer un conteneur média
-        media_response = requests.post(
-            f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media",
-            data={
-                "image_url": post.image_url,
-                "caption": post.caption,
-                "access_token": access_token
+        media_container = []
+        for image in images:
+            # Créer un conteneur pour chaque image (et si il y a plusieurs images, créer les objets carousel)
+            image_data = {
+                "image_url": f"{settings.BACKEND_URL}/{image.image_url}",
+                "access_token": access_token,
+                "is_carousel_item": len(images) > 1
             }
-        )
-        media_data = media_response.json()
+            if len(images) == 1:
+                image_data["caption"] = post.caption
 
-        if "id" not in media_data:
-            return {"error": "Erreur lors de la création du conteneur média", "details": media_data}
+            image_response = requests.post(
+                f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media",
+                data=image_data
+            )
+            image_data = image_response.json()
+            if "id" not in image_data:
+                return {"error": "Erreur lors de la création du conteneur", "details": image_data}
+            media_container.append(image_data["id"])
 
-        container_id = media_data["id"]
+        container_id = None
 
-        # Étape 2 : Publier le conteneur
+        # Si le media_container contient plusieurs images, on crée un conteneur carousel
+        if len(media_container) != 1:
+            # Sinon, on crée un conteneur carousel avec toutes les images
+            carousel_container = requests.post(
+                f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media",
+                data={
+                    "media_type": "CAROUSEL",
+                    "children": ",".join(media_container),
+                    "access_token": access_token,
+                    "caption": post.caption,
+                }
+            )
+            carousel_data = carousel_container.json()
+            if "id" not in carousel_data:
+                return {"error": "Erreur lors de la création du conteneur carousel", "details": carousel_data}
+            container_id = carousel_data["id"]
+        else:
+            container_id = media_container[0]
+        
+        if not container_id:
+            return {"error": "Erreur lors de la création du conteneur"}
+        
+        # Puis on publie le post
         publish_response = requests.post(
             f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media_publish",
             data={
@@ -41,6 +72,8 @@ def publish_post(post_id):
                 "access_token": access_token
             }
         )
+        if publish_response.status_code != 200:
+            return {"error": "Erreur lors de la publication du post", "details": publish_response.json()}
 
         post.status = "published"
         post.save()

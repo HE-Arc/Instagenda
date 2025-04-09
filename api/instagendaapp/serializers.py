@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Group, Post, IgProfile
+from .models import Group, Post, IgProfile, PostImage
 from django.contrib.auth.hashers import check_password
 
 class IgProfileSerializer(serializers.ModelSerializer):
@@ -28,6 +28,39 @@ class UserSerializer(serializers.ModelSerializer):
 
         # Mise à jour des autres champs
         return super().update(instance, validated_data)
+
+class PostImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostImage
+        fields = ['id', 'image', 'order', 'image_url']
+        read_only_fields = ['image_url']
+    
+class PostSerializer(serializers.ModelSerializer):
+    images = PostImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
+        write_only=True,
+        required=False
+    )
+    
+    class Meta:
+        model = Post
+        fields = [
+            'id', 'name', 'group_owner', 'caption', 'date_publication', 'validated', 'status',
+            'celery_task_id', 'images', 'uploaded_images'
+        ]
+        read_only_fields = ['id', 'status', 'group_owner']
+        extra_kwargs = {'celery_task_id': {'write_only': True}}
+
+    def create(self, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', None)
+        post = Post.objects.create(**validated_data)
+        
+        if uploaded_images:
+            for order, image in enumerate(uploaded_images):
+                PostImage.objects.create(post=post, image=image, order=order)
+                
+        return post
     
 class GroupSerializer(serializers.ModelSerializer):
     workers = UserSerializer(many=True, required=False)
@@ -40,18 +73,6 @@ class GroupSerializer(serializers.ModelSerializer):
     def get_posts(self, obj):
         posts = Post.objects.filter(group_owner=obj)
         return PostSerializer(posts, many=True).data
-
-class PostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = [
-            'id', 'name', 'group_owner', 'caption', 
-            'image_url', 'date_publication', 'validated', 'status',
-            'celery_task_id'
-        ]
-        read_only_fields = ['id', 'status', 'group_owner']
-        extra_kwargs = {'celery_task_id': {'write_only': True}}
-        fields = ['id', 'name', 'description', 'owner', 'workers']
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True, required=True)

@@ -27,9 +27,26 @@ const postImage = ref('');
 const postDate = ref('');
 const postTime = ref('');
 const files = ref([]);
+const existingImages = ref([]);
+const uploaderRef = ref(null);
 const { errorMessage } = useErrorMessage();
 const route = useRoute();
 const router = useRouter();
+
+// Function to convert URL to File object
+const urlToFile = async (url, filename) => {
+  try {
+    const apiBaseUrl = import.meta.env.VITE_API_URL;
+    const fullUrl = `${apiBaseUrl}${url}`;
+
+    const response = await fetch(fullUrl);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  } catch (error) {
+    console.error("Erreur lors de la conversion de l'URL en fichier:", error);
+    return null;
+  }
+};
 
 if (props.update) {
   const fetchPost = async () => {
@@ -37,11 +54,36 @@ if (props.update) {
       const response = await axios.get(`/posts/${props.postid}/`);
       postName.value = response.data.name;
       postContent.value = response.data.caption;
-      postImage.value = response.data.image_url;
-      console.log(response.data.date_publication);
+
       const [datePart, timePart] = response.data.date_publication.split('T');
       postDate.value = datePart.replace(/-/g, '/');
       postTime.value = timePart.slice(0, 5);
+
+      // Get existing images
+      if (response.data.images && response.data.images.length > 0) {
+        existingImages.value = response.data.images;
+
+        // Convert URLs to File objects for the uploader
+        const imageFiles = await Promise.all(
+          response.data.images.map(async (img) => {
+            const filename = img.image_url.split('/').pop();
+            const file = await urlToFile(img.image_url, filename);
+            if (file) {
+              file.id = img.id;
+              file.order = img.order;
+              return file;
+            }
+            return null;
+          })
+        );
+
+        // add files to the uploader
+        setTimeout(() => {
+          if (uploaderRef.value) {
+            uploaderRef.value.addFiles(imageFiles.filter(f => f !== null).sort((a, b) => a.order - b.order));
+          }
+        }, 500);
+      }
     } catch (error) {
       errorMessage.value = 'Erreur lors de la récupération du post : ' + error.response?.data.error || error;
     }
@@ -50,42 +92,57 @@ if (props.update) {
 }
 
 const handleAction = async () => {
-  if (!props.update) {
-    if (!postName.value.trim() || !postContent.value.trim() || !postImage.value.trim() || !postDate.value || !postTime.value) {
-      return;
-    }
+  if (!postName.value.trim() || !postContent.value.trim() || !postDate.value || !postTime.value || files.value.length === 0) {
+    return;
+  }
 
-    const formattedDateTime = `${postDate.value} ${postTime.value}`;
-    const date = new Date(formattedDateTime);
-    const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ').replace(/:\d{2}$/, '');
+  const formattedDateTime = `${postDate.value} ${postTime.value}`;
+  const date = new Date(formattedDateTime);
+  const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ').replace(/:\d{2}$/, '');
 
-    const now = new Date();
-    if (date < now) {
-      errorMessage.value = 'La date doit être dans le futur !';
-      return;
-    }
+  const now = new Date();
+  if (date < now) {
+    errorMessage.value = 'La date doit être dans le futur !';
+    return;
+  }
 
-    try {
-      let response = await axios.post('/posts/', {
-        name: postName.value,
-        caption: postContent.value,
-        image_url: postImage.value,
-        date_publication: formattedDate,
-        group_id: route.params.id,
+  try {
+    const formData = new FormData();
+    formData.append('name', postName.value);
+    formData.append('caption', postContent.value);
+    formData.append('date_publication', formattedDate);
+
+    // Add all images in the order of the draggable
+    files.value.forEach((file) => {
+      if (!file.id) {
+        formData.append('uploaded_images', file);
+      }
+    });
+
+    if (!props.update) {
+      // Create a new post
+      formData.append('group_id', route.params.id);
+      await axios.post('/posts/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      console.log(response.data)
+
+      // Reset form fields after creation
       postName.value = '';
       postContent.value = '';
       postImage.value = '';
       postDate.value = '';
       postTime.value = '';
-    } catch (error) {
-      errorMessage.value = 'Erreur lors de la création du post : ' + error.response?.data.error || error;
+      files.value = [];
+    } else {
+      console.log("Update post")
     }
-  } else {
-    console.log('Update post');
+    router.push('/groups/' + route.params.id);
+  } catch (error) {
+    const action = props.update ? 'la mise à jour' : 'la création';
+    errorMessage.value = `Erreur lors de ${action} du post : ` + (error.response?.data.error || error);
   }
-  router.push('/group/');
 };
 
 const onFilesAdded = (newFiles) => {
@@ -93,11 +150,22 @@ const onFilesAdded = (newFiles) => {
 };
 
 const onFilesRemoved = (removedFiles) => {
+  // Delete the _objectUrl property to avoid memory leaks
+  removedFiles.forEach(file => {
+    if (file._objectUrl) {
+      URL.revokeObjectURL(file._objectUrl);
+      delete file._objectUrl;
+    }
+  });
   files.value = files.value.filter(file => !removedFiles.includes(file));
 };
 
+// Save object URLs to avoid multiple creations
 const getObjectUrl = (file) => {
-  return URL.createObjectURL(file);
+  if (!file._objectUrl) {
+    file._objectUrl = URL.createObjectURL(file);
+  }
+  return file._objectUrl;
 };
 </script>
 <template>
@@ -106,6 +174,7 @@ const getObjectUrl = (file) => {
     <QInput v-model="postName" label="Nom du post" filled :rules="[val => !!val || 'Le nom est requis']" class="q-mb-md" />
     <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis']" type="textarea" class="q-mb-md" />
     <q-uploader
+      ref="uploaderRef"
       label="Photos du post"
       @added="onFilesAdded"
       @removed="onFilesRemoved"
@@ -118,7 +187,6 @@ const getObjectUrl = (file) => {
     <h6>Photos ajoutées</h6>
     <p v-if="files.length === 0">Aucune photo ajoutée</p>
     <p v-else>Faites glisser pour réorganiser</p>
-    <QInput v-model="postImage" label="Image du post" filled :rules="[val => !!val || 'L\'image est requise']" class="q-mb-md" type="url"/>
     <draggable v-model="files" class="q-mt-md" :itemKey="(item) => item.name">
       <template #item="{ element }">
         <div class="q-pa-sm q-mb-sm image-container">

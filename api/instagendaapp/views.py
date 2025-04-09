@@ -6,8 +6,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from .serializers import UserSerializer, GroupSerializer, PostSerializer, ChangePasswordSerializer
-from .models import IgProfile, Group, Post
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from .serializers import UserSerializer, GroupSerializer, PostSerializer, ChangePasswordSerializer, PostImageSerializer
+from .models import IgProfile, Group, Post, PostImage
 import requests
 from django.conf import settings
 from django.utils.timezone import make_aware
@@ -15,6 +16,7 @@ from datetime import datetime
 from celery import current_app
 from .tasks import publish_post
 import pytz
+import os
 
 # Create your views here.
 def backend_status(request):
@@ -216,11 +218,11 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def perform_create(self, serializer):
         name = self.request.data.get("name")
         caption = self.request.data.get("caption")
-        image_url = self.request.data.get("image_url")
         date_str = self.request.data.get("date_publication")
         group_id = self.request.data.get("group_id")
 
@@ -229,7 +231,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         group_owner = Group.objects.get(id=group_id)
 
-        post = serializer.save(name=name, caption=caption, group_owner=group_owner, image_url=image_url, date_publication=date_publication)
+        post = serializer.save(name=name, caption=caption, group_owner=group_owner, date_publication=date_publication)
 
         task = publish_post.apply_async(
             args=[post.id],
@@ -238,6 +240,47 @@ class PostViewSet(viewsets.ModelViewSet):
 
         post.celery_task_id = task.id
         post.save()
+    
+    def destroy(self, request, *args, **kwargs):
+        post = self.get_object()
+        group = post.group_owner
+
+        is_owner = group.owner.id == request.user.id
+        is_worker = group.workers.filter(id=request.user.id).exists()
         
+        if not (is_owner or is_worker):
+            return Response({'error': 'Vous n\'êtes pas autorisé à supprimer ce post'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Delete Celery task if it exists
+        if post.celery_task_id:
+            try:
+                current_app.control.revoke(post.celery_task_id, terminate=True)
+            except Exception as e:
+                pass
+        
+        images = PostImage.objects.filter(post=post)
+
+        for image in images:
+            try:
+                image.image.delete(save=False)
+            except Exception as e:
+                print(f"Error deleting image: {e}")
+        
+        post_folder = os.path.join(settings.MEDIA_ROOT, 'post_images', str(post.id))
+        if os.path.exists(post_folder):
+            os.rmdir(post_folder)
+        
+        # Delete the post (this will also delete the PostImage relations in cascade)
+        self.perform_destroy(post)
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
     def list(self, request, *args, **kwargs):
         return Response({'detail': 'Accès à cet endpoint non autorisé.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
+    @action(detail=True, methods=['get'])
+    def images(self, request, pk=None):
+        post = self.get_object()
+        images = PostImage.objects.filter(post=post)
+        serializer = PostImageSerializer(images, many=True)
+        return Response(serializer.data)

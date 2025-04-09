@@ -26,7 +26,6 @@ class Post(models.Model):
     name = models.CharField(max_length=255)
     group_owner = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="owned_posts")
     caption = models.TextField(blank=True, null=True)
-    image_url = models.URLField()
     date_publication = models.DateTimeField()
     validated = models.BooleanField(default=False)
     status = models.CharField(max_length=20, default="planified")
@@ -34,3 +33,24 @@ class Post(models.Model):
 
     def __str__(self):
         return f"Post {self.name} planifié à {self.date_publication}"
+
+def upload_to(instance, filename):
+    return f'post_images/{instance.post.id}/{filename}'
+
+class PostImage(models.Model):
+    id = models.AutoField(primary_key=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to=upload_to)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+    
+    def __str__(self):
+        return f"Image {self.id} for Post {self.post.name}"
+        
+    @property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return None
