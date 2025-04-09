@@ -31,9 +31,7 @@ jobs:
 
       - name: Restart Celery worker
         run: |
-          pkill -f "celery" || true
-          cd /home/django/project/Instagenda/api
-          nohup pipenv run celery -A instagenda worker &
+          sudo systemctl restart celery
 
       - name: Build Vue.js
         run: |
