@@ -27,6 +27,7 @@ jobs:
           pipenv install
           pipenv run python manage.py migrate
           pipenv run python manage.py collectstatic --noinput
+          sudo pkill -9 gunicorn
           sudo systemctl restart gunicorn
 
       - name: Restart Celery worker
