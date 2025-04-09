@@ -29,6 +29,12 @@ jobs:
           pipenv run python manage.py collectstatic --noinput
           sudo systemctl restart gunicorn
 
+      - name: Restart Celery worker
+        run: |
+          pkill -f "celery -A instagenda worker"
+          cd /home/django/project/Instagenda/api
+          nohup pipenv run celery -A instagenda worker --loglevel=debug &
+
       - name: Build Vue.js
         run: |
           cd /home/django/project/Instagenda/frontend
