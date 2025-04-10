@@ -18,7 +18,7 @@ pipenv run python manage.py migrate
 pipenv run celery -A instagenda worker --loglevel=info &
 
 # Lancer Django en arrière-plan sur port 8000
-pipenv run python manage.py runserver 127.0.0.1:8000 &
+pipenv run python manage.py runserver 0.0.0.0:8000 &
 
 # Lancer nginx
 nginx -g 'daemon off;'
