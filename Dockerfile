@@ -36,7 +36,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Exposer les ports
-EXPOSE 80
+EXPOSE 80 8000
 
 # Entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
