@@ -14,6 +14,8 @@ redis-server --daemonize yes
 cd /app/api
 pipenv run python manage.py migrate
 
+python manage.py collectstatic
+
 # Lancer celery en arrière-plan
 pipenv run celery -A instagenda worker --loglevel=info &
 
