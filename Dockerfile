@@ -16,13 +16,6 @@ WORKDIR /app
 # Copier tous les fichiers du projet
 COPY . .
 
-# Créer dossiers pour media/static si non existants
-RUN mkdir -p /app/api/media /app/api/staticfiles
-
-# Donner les bons droits à Nginx pour lire media/static
-RUN chown -R www-data:www-data /app/api/media /app/api/staticfiles && \
-    chmod -R 755 /app/api/media /app/api/staticfiles
-
 # Installer backend (Django)
 WORKDIR /app/api
 RUN pipenv install --deploy --ignore-pipfile
