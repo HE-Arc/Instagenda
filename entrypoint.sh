@@ -19,8 +19,7 @@ python manage.py collectstatic
 # Lancer celery en arrière-plan
 pipenv run celery -A instagenda worker --loglevel=info &
 
-# Lancer Django en arrière-plan sur port 8000
-pipenv run python manage.py runserver 0.0.0.0:8000 &
+pipenv run gunicorn instagenda.wsgi:application --bind 0.0.0.0:9000 --workers 3 --timeout 120 &
 
 # Lancer nginx
 nginx -g 'daemon off;'

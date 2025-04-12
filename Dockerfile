@@ -20,6 +20,8 @@ COPY . .
 WORKDIR /app/api
 RUN pipenv install --deploy --ignore-pipfile
 
+RUN pipenv install gunicorn
+
 # Builder frontend
 WORKDIR /app/frontend
 RUN npm install && npm run build
