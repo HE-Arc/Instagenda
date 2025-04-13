@@ -263,7 +263,7 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(post)
         return Response(serializer.data)
       
-      def update(self, request, pk=None):
+    def update(self, request, pk=None):
         post = self.get_object()
         group = post.group_owner
 
