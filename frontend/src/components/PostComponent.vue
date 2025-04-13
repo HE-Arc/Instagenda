@@ -191,12 +191,12 @@ const getObjectUrl = (file) => {
       class="back-btn"
       color="primary"
     />
-    <h5>{{props.title}}</h5>
+    <h5 class="title">{{props.title}}</h5>
     <QInput v-model="postName" label="Nom du post" filled :rules="[val => !!val || 'Le nom est requis']" class="q-mb-md" />
     <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis']" type="textarea" class="q-mb-md" />
     <q-uploader
       ref="uploaderRef"
-      label="Photos du post"
+      label="Photos du post (format recommandé 1:1)"
       @added="onFilesAdded"
       @removed="onFilesRemoved"
       :auto-upload="false"
@@ -230,6 +230,10 @@ const getObjectUrl = (file) => {
   max-width: 700px;
   margin: 0 auto;
   margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.title {
   margin-bottom: 20px;
 }
 

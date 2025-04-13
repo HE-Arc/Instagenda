@@ -161,7 +161,7 @@ onBeforeMount(() => {
 
       <div class="right-panel">
         <div class="header">
-          <QBtn rounded label="New post" color="primary" class="create-post-btn" @click="createPost" />
+          <QBtn rounded label="créer un post" color="primary" class="create-post-btn" @click="createPost" />
         </div>
 
         <div class="posts-list">
