@@ -1,6 +1,5 @@
 import requests
 from celery import shared_task
-from django.utils.timezone import now
 from django.conf import settings
 from .models import Post, PostImage
 
@@ -10,11 +9,16 @@ def publish_post(post_id):
         print("task executing...")
         post = Post.objects.get(id=post_id)
 
+        if post.status != "validated":
+            updateStatus(post, "expired")
+            return {"error": "Le post n'a pas été encore validé"}
+
         # Récupérer l'access token de l'utilisateur
         instagram_user_id = post.group_owner.owner.profile.instagram_user_id
         access_token = post.group_owner.owner.profile.instagram_access_token
 
         if not access_token or not instagram_user_id:
+            updateStatus(post, "expired")
             return {"error": "Aucun access_token trouvé pour cet utilisateur"}
         
         # Récupérer les images du post
@@ -37,6 +41,7 @@ def publish_post(post_id):
             )
             image_data = image_response.json()
             if "id" not in image_data:
+                updateStatus(post, "expired")
                 return {"error": "Erreur lors de la création du conteneur", "details": image_data}
             media_container.append(image_data["id"])
 
@@ -56,12 +61,14 @@ def publish_post(post_id):
             )
             carousel_data = carousel_container.json()
             if "id" not in carousel_data:
+                updateStatus(post, "expired")
                 return {"error": "Erreur lors de la création du conteneur carousel", "details": carousel_data}
             container_id = carousel_data["id"]
         else:
             container_id = media_container[0]
         
         if not container_id:
+            updateStatus(post, "expired")
             return {"error": "Erreur lors de la création du conteneur"}
         
         # Puis on publie le post
@@ -73,12 +80,16 @@ def publish_post(post_id):
             }
         )
         if publish_response.status_code != 200:
+            updateStatus(post, "expired")
             return {"error": "Erreur lors de la publication du post", "details": publish_response.json()}
 
-        post.status = "published"
-        post.save()
+        updateStatus(post, "published")
 
         return publish_response.json()
 
     except Post.DoesNotExist:
         return {"error": f"Post avec l'ID {post_id} introuvable"}
+    
+def updateStatus(post, status):
+    post.status = status
+    post.save()
