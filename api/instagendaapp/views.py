@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -33,8 +32,8 @@ class AuthViewSet(viewsets.ViewSet):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return Response({"message": "User logged in"}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Utilisateur connecté"}, status=status.HTTP_200_OK)
+        return Response({"error": "Champs invalides"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def register(self, request):
@@ -42,20 +41,20 @@ class AuthViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.save()
             login(request, user)
-            return Response({"message": "User registered"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Utilisateur enregistré"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def logout(self, request):
         if request.user.is_authenticated:
             logout(request)
-            return Response({"message": "User logged out"}, status=status.HTTP_200_OK)
-        return Response({"error": "User not logged in"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Utilisateur déconnecté"}, status=status.HTTP_200_OK)
+        return Response({"error": "Utilisateur non déconnecté"}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=False, methods=['get'])
     def profile(self, request):
         if not request.user or request.user.is_anonymous:
-            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Utilisateur non authentifié"}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -65,7 +64,7 @@ class IgViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def connection(self, request):
         if not request.user or request.user.is_anonymous:
-            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Utilisateur non authentifié"}, status=status.HTTP_401_UNAUTHORIZED)
         code = request.data.get('code')
 
         client_id = settings.INSTAGRAM_CLIENT_ID
@@ -125,15 +124,14 @@ class UserViewSet(viewsets.ModelViewSet):
         data = UserSerializer(user).data
 
         if user.id != request.user.id:
-            return Response({'error': 'You are not allowed to view this user'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas autorisé à accéder à cet utilisateur.'}, status=status.HTTP_403_FORBIDDEN)
         
         return Response(data)
     
     def update(self, request, pk=None):
-        """ Met à jour l'utilisateur (sans changer le mot de passe) """
-        user = request.user  # Récupère l'utilisateur connecté
+        user = request.user
 
-        serializer = UserSerializer(user, data=request.data, partial=True)  # Permet une mise à jour partielle
+        serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -142,7 +140,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def change_password(self, request):
-        """ Change le mot de passe de l'utilisateur """
         serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -161,7 +158,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         is_owner = data["owner"]["id"] == request.user.id
         is_worker = any(worker["id"] == request.user.id for worker in data["workers"])
         if not (is_owner or is_worker):
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
         
         return Response(data)
 
@@ -176,7 +173,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = self.get_object()
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
 
         self.perform_destroy(group)
         return Response({'status': 'Group deleted'}, status=status.HTTP_204_NO_CONTENT)
@@ -187,13 +184,13 @@ class GroupViewSet(viewsets.ModelViewSet):
         user_username = request.data.get('username')
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(username=user_username)
 
             if group.workers.filter(id=user.id).exists():
-                return Response({'error': 'User is already in the group'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'L\'utilisateur est déjà dans le groupe'}, status=status.HTTP_400_BAD_REQUEST)
             
             group.workers.add(user)
             return Response({'user': UserSerializer(user).data})
@@ -206,14 +203,14 @@ class GroupViewSet(viewsets.ModelViewSet):
         user_id = request.data.get('user_id')
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(id=user_id)
             group.workers.remove(user)
-            return Response({'status': 'User removed'})
+            return Response({'status': 'Utilisateur enlevé'})
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=400)
+            return Response({'error': 'Utilisateur introuvable'}, status=400)
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -342,3 +339,10 @@ class PostViewSet(viewsets.ModelViewSet):
         images = PostImage.objects.filter(post=post)
         serializer = PostImageSerializer(images, many=True)
         return Response(serializer.data)
+    
+
+def hasRights(group, request):
+    is_owner = group.owner.id == request.user.id
+    is_worker = group.workers.filter(id=request.user.id).exists()
+    
+    return is_owner or is_worker
