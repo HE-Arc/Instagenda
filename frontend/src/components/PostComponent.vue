@@ -26,6 +26,7 @@ const postContent = ref('');
 const postImage = ref('');
 const postDate = ref('');
 const postTime = ref('');
+const groupId = ref(null);
 const files = ref([]);
 const existingImages = ref([]);
 const uploaderRef = ref(null);
@@ -54,6 +55,8 @@ if (props.update) {
       const response = await axios.get(`/posts/${props.postid}/`);
       postName.value = response.data.name;
       postContent.value = response.data.caption;
+
+      groupId.value = response.data.group_owner;
 
       const [datePart, timePart] = response.data.date_publication.split('T');
       postDate.value = datePart.replace(/-/g, '/');
@@ -142,7 +145,7 @@ const handleAction = async () => {
         }
       });
     }
-    router.push('/groups/' + route.params.id);
+    router.push('/groups/' + groupId.value);
   } catch (error) {
     const action = props.update ? 'la mise à jour' : 'la création';
     errorMessage.value = `Erreur lors de ${action} du post : ` + (error.response?.data.error || error);
