@@ -155,10 +155,8 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = self.get_object()
         data = GroupSerializer(group).data
 
-        is_owner = data["owner"]["id"] == request.user.id
-        is_worker = any(worker["id"] == request.user.id for worker in data["workers"])
-        if not (is_owner or is_worker):
-            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
+        if not hasRights(group, request):
+            return Response({'error': 'Vous n\'êtes pas un membre du groupe.'}, status=status.HTTP_403_FORBIDDEN)
         
         return Response(data)
 
@@ -225,10 +223,7 @@ class PostViewSet(viewsets.ModelViewSet):
         group_id = self.request.data.get("group_id")
         group_owner = Group.objects.get(id=group_id)
 
-        is_owner = group_owner.owner.id == self.request.user.id
-        is_worker = group_owner.workers.filter(id=self.request.user.id).exists()
-        
-        if not (is_owner or is_worker):
+        if not hasRights(group_owner, self.request):
             return Response({'error': 'Vous n\'êtes pas autorisé à créer un post dans ce groupe'}, status=status.HTTP_403_FORBIDDEN)
 
         date_publication_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
@@ -248,10 +243,7 @@ class PostViewSet(viewsets.ModelViewSet):
         post = self.get_object()
         group = post.group_owner
 
-        is_owner = group.owner.id == request.user.id
-        is_worker = group.workers.filter(id=request.user.id).exists()
-        
-        if not (is_owner or is_worker):
+        if not hasRights(group, request):
             return Response(
                 {'error': 'Vous n\'êtes pas autorisé à accéder à ce post'},
                 status=status.HTTP_403_FORBIDDEN
@@ -264,10 +256,7 @@ class PostViewSet(viewsets.ModelViewSet):
         post = self.get_object()
         group = post.group_owner
 
-        is_owner = group.owner.id == request.user.id
-        is_worker = group.workers.filter(id=request.user.id).exists()
-        
-        if not (is_owner or is_worker):
+        if not hasRights(group, request):
             return Response({'error': 'Vous n\'êtes pas autorisé à éditer ce post'}, status=status.HTTP_403_FORBIDDEN)
         
         old_date = post.date_publication
@@ -300,10 +289,7 @@ class PostViewSet(viewsets.ModelViewSet):
         post = self.get_object()
         group = post.group_owner
 
-        is_owner = group.owner.id == request.user.id
-        is_worker = group.workers.filter(id=request.user.id).exists()
-        
-        if not (is_owner or is_worker):
+        if not hasRights(group, request):
             return Response({'error': 'Vous n\'êtes pas autorisé à supprimer ce post'}, status=status.HTTP_403_FORBIDDEN)
         
         # Delete Celery task if it exists
@@ -344,5 +330,4 @@ class PostViewSet(viewsets.ModelViewSet):
 def hasRights(group, request):
     is_owner = group.owner.id == request.user.id
     is_worker = group.workers.filter(id=request.user.id).exists()
-    
     return is_owner or is_worker
