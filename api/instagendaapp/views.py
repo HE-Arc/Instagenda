@@ -280,6 +280,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 updated_post.celery_task_id = task.id
                 updated_post.date_publication = new_date
 
+            updated_post.status = "unvalidated"
             updated_post.save()
             return Response(PostSerializer(updated_post).data)
 
