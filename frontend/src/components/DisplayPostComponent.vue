@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { QCarousel, QCarouselSlide, QBtn } from 'quasar';
+import { useErrorMessage } from '@/components/store';
 
 const props = defineProps({
   postid: {
@@ -15,19 +16,19 @@ const router = useRouter();
 const post = ref(null);
 const images = ref([]);
 const activeSlide = ref(0);
+const { errorMessage } = useErrorMessage();
 
 const fetchPost = async () => {
   try {
     const response = await axios.get(`/posts/${props.postid}/`);
     post.value = response.data;
 
-    // Reconstituer les URLs complètes des images
     images.value = (response.data.images || []).map((img) => ({
       id: img.id,
       url: new URL(img.image_url, import.meta.env.VITE_API_URL).href
     }));
   } catch (error) {
-    console.error('Erreur lors de la récupération du post :', error);
+    errorMessage.value ='Ce post n\'existe pas ou a été supprimé.';
   }
 };
 
@@ -70,7 +71,7 @@ const formatDate = (isoString) => {
         animated
         swipeable
         infinite
-        control-color="white"
+        control-color="primary"
         navigation
         height="400px"
         class="carousel"
@@ -85,19 +86,18 @@ const formatDate = (isoString) => {
 
       <!-- Post Details -->
       <div class="post-details">
-        <h2>{{ post.name }}</h2>
         <p class="caption">{{ post.caption }}</p>
         <p class="date">Planifié pour : {{ formatDate(post.date_publication) }}</p>
       </div>
     </div>
 
     <div v-else class="loading">
-      Chargement...
+      <p>Chargement...</p>
     </div>
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .preview-container {
   max-width: 600px;
   margin: 0 auto;
@@ -109,14 +109,14 @@ const formatDate = (isoString) => {
 }
 
 .card {
-  background: white;
+  background: $white;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .carousel {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid $white;
 }
 
 .post-details {
@@ -131,12 +131,12 @@ const formatDate = (isoString) => {
 .caption {
   font-size: 1rem;
   margin-bottom: 15px;
-  color: #333;
+  color: $dark;
 }
 
 .date {
   font-size: 0.9rem;
-  color: #666;
+  color: $dark;
   font-style: italic;
 }
 

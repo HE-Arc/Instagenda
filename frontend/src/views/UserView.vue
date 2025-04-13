@@ -157,7 +157,7 @@ const savePassword = () => {
   align-items: center;
   gap: 8px;
   background-color: #e1306c;
-  color: white;
+  color: $white;
   text-decoration: none;
   padding: 10px 15px;
   border-radius: 8px;
