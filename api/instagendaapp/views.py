@@ -247,7 +247,23 @@ class PostViewSet(viewsets.ModelViewSet):
         post.celery_task_id = task.id
         post.save()
 
-    def update(self, request, pk=None):
+    def retrieve(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        is_owner = group.owner.id == request.user.id
+        is_worker = group.workers.filter(id=request.user.id).exists()
+        
+        if not (is_owner or is_worker):
+            return Response(
+                {'error': 'Vous n\'êtes pas autorisé à accéder à ce post'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(post)
+        return Response(serializer.data)
+      
+      def update(self, request, pk=None):
         post = self.get_object()
         group = post.group_owner
 

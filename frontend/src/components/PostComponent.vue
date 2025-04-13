@@ -174,6 +174,15 @@ const getObjectUrl = (file) => {
 </script>
 <template>
   <main class="edit-post-container">
+    <QBtn
+      flat
+      dense
+      icon="arrow_back"
+      label="Retour"
+      @click="router.back()"
+      class="back-btn"
+      color="primary"
+    />
     <h5>{{props.title}}</h5>
     <QInput v-model="postName" label="Nom du post" filled :rules="[val => !!val || 'Le nom est requis']" class="q-mb-md" />
     <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis']" type="textarea" class="q-mb-md" />
@@ -214,6 +223,11 @@ const getObjectUrl = (file) => {
   margin: 0 auto;
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+.back-btn {
+  align-self: flex-start;
+  margin-bottom: 10px;
 }
 
 .date-time-container {

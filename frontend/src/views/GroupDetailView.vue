@@ -66,6 +66,10 @@ const editPost = async (postId) => {
   router.push("/update-post/" + postId)
 }
 
+const displayPost = async (postId) => {
+  router.push("/display-post/" + postId)
+}
+
 const deletePost = async (postId) => {
   try {
     await axios.delete(`/posts/${postId}/`)
@@ -113,14 +117,14 @@ onBeforeMount(() => {
         </div>
         <div class="section-title">Publications</div>
         <div class="posts-list">
-          <div v-for="post in posts" :key="post.id" class="post-item">
+          <div v-for="post in posts" :key="post.id" class="post-item" @click="displayPost(post.id)">
             <div class="post-content">
               <h5>{{ post.name }}</h5>
               <p>{{ post.caption }}</p>
             </div>
             <div class="post-actions">
-              <QBtn flat dense round icon="edit" @click="editPost(post.id)" />
-              <QBtn flat dense round color="red" icon="delete" @click="deletePost(post.id)" />
+              <QBtn flat dense round icon="edit" @click.stop="editPost(post.id)" />
+              <QBtn flat dense round color="red" icon="delete" @click.stop="deletePost(post.id)" />
             </div>
           </div>
           <div v-if="!posts" class="no-posts">
@@ -247,13 +251,6 @@ onBeforeMount(() => {
 }
 
 .post-item {
-  background: $secondary;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  padding: 10px;
-}
-
-.post-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -261,6 +258,13 @@ onBeforeMount(() => {
   border-radius: 10px;
   margin-bottom: 10px;
   padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.post-item:hover {
+  transform: scale(1.02);
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .post-actions {
