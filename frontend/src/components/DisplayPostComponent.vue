@@ -1,3 +1,60 @@
+<template>
+  <main class="preview-container">
+    <QBtn
+      flat
+      dense
+      icon="arrow_back"
+      label="Retour"
+      @click="router.back()"
+      class="back-btn"
+      color="primary"
+    />
+
+    <div v-if="post" class="card">
+      <!-- Images Carousel -->
+      <QCarousel
+        v-if="images.length"
+        :key="images.length"
+        v-model="activeSlide"
+        animated
+        swipeable
+        infinite
+        class="carousel square-carousel"
+      >
+        <QCarouselSlide
+          v-for="(img, index) in images"
+          :key="img.id"
+          :name="index"
+          class="carousel-slide"
+        >
+          <img :src="img.url" class="carousel-image" />
+        </QCarouselSlide>
+      </QCarousel>
+
+      <!-- Custom Carousel Controls (dots) -->
+      <div class="carousel-controls" v-if="images.length > 1">
+        <span
+          v-for="(img, index) in images"
+          :key="'dot-' + img.id"
+          class="dot"
+          :class="{ active: activeSlide === index }"
+          @click="activeSlide = index"
+        ></span>
+      </div>
+
+      <!-- Post Details -->
+      <div class="post-details">
+        <p class="caption">{{ post.caption }}</p>
+        <p class="date">Planifié pour : {{ formatDate(post.date_publication) }}</p>
+      </div>
+    </div>
+
+    <div v-else class="loading">
+      <p>Chargement...</p>
+    </div>
+  </main>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -28,7 +85,7 @@ const fetchPost = async () => {
       url: new URL(img.image_url, import.meta.env.VITE_API_URL).href
     }));
   } catch (error) {
-    errorMessage.value ='Ce post n\'existe pas ou a été supprimé.';
+    errorMessage.value = 'Ce post n\'existe pas ou a été supprimé.';
   }
 };
 
@@ -50,56 +107,9 @@ const formatDate = (isoString) => {
 };
 </script>
 
-<template>
-  <main class="preview-container">
-    <QBtn
-      flat
-      dense
-      icon="arrow_back"
-      label="Retour"
-      @click="router.back()"
-      class="back-btn"
-      color="primary"
-    />
-
-    <div v-if="post" class="card">
-      <!-- Images Carousel -->
-      <QCarousel
-        v-if="images.length"
-        :key="images.length"
-        v-model="activeSlide"
-        animated
-        swipeable
-        infinite
-        control-color="primary"
-        navigation
-        height="400px"
-        class="carousel"
-      >
-        <QCarouselSlide
-          v-for="(img, index) in images"
-          :key="img.id"
-          :name="index"
-          :img-src="img.url"
-        />
-      </QCarousel>
-
-      <!-- Post Details -->
-      <div class="post-details">
-        <p class="caption">{{ post.caption }}</p>
-        <p class="date">Planifié pour : {{ formatDate(post.date_publication) }}</p>
-      </div>
-    </div>
-
-    <div v-else class="loading">
-      <p>Chargement...</p>
-    </div>
-  </main>
-</template>
-
 <style scoped lang="scss">
 .preview-container {
-  max-width: 600px;
+  max-width: 400px;
   margin: 0 auto;
   padding: 20px 10px;
 }
@@ -119,13 +129,45 @@ const formatDate = (isoString) => {
   border-bottom: 1px solid $white;
 }
 
-.post-details {
-  padding: 20px;
+.square-carousel {
+  aspect-ratio: 1 / 1;
+  height: auto !important;
 }
 
-.post-details h2 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
+.carousel-slide {
+  padding: 10px;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Custom Dots */
+.carousel-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: $secondary;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: $primary;
+}
+
+.post-details {
+  padding: 0px 15px 0px 15px;
 }
 
 .caption {
@@ -142,6 +184,6 @@ const formatDate = (isoString) => {
 
 .loading {
   text-align: center;
-  color: #ccc;
+  color: $dark;
 }
 </style>

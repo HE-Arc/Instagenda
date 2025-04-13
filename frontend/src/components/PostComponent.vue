@@ -145,7 +145,12 @@ const handleAction = async () => {
         }
       });
     }
-    router.push('/groups/' + groupId.value);
+    if (props.update) {
+      router.push('/groups/' + groupId.value);
+    } else {
+      router.push('/groups/' + route.params.id);
+    }
+
   } catch (error) {
     const action = props.update ? 'la mise à jour' : 'la création';
     errorMessage.value = `Erreur lors de ${action} du post : ` + (error.response?.data.error || error);
