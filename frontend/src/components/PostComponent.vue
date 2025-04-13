@@ -136,7 +136,11 @@ const handleAction = async () => {
       postTime.value = '';
       files.value = [];
     } else {
-      console.log("Update post")
+      await axios.put(`/posts/${props.postid}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
     }
     router.push('/groups/' + route.params.id);
   } catch (error) {

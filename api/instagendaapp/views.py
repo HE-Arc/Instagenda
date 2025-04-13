@@ -13,6 +13,7 @@ import requests
 from django.conf import settings
 from django.utils.timezone import make_aware
 from datetime import datetime
+from django.utils.timezone import now
 from celery import current_app
 from .tasks import publish_post
 import pytz
@@ -225,11 +226,16 @@ class PostViewSet(viewsets.ModelViewSet):
         caption = self.request.data.get("caption")
         date_str = self.request.data.get("date_publication")
         group_id = self.request.data.get("group_id")
+        group_owner = Group.objects.get(id=group_id)
+
+        is_owner = group_owner.owner.id == self.request.user.id
+        is_worker = group_owner.workers.filter(id=self.request.user.id).exists()
+        
+        if not (is_owner or is_worker):
+            return Response({'error': 'Vous n\'êtes pas autorisé à créer un post dans ce groupe'}, status=status.HTTP_403_FORBIDDEN)
 
         date_publication_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
         date_publication = date_publication_aw.astimezone(pytz.utc)
-
-        group_owner = Group.objects.get(id=group_id)
 
         post = serializer.save(name=name, caption=caption, group_owner=group_owner, date_publication=date_publication)
 
@@ -240,6 +246,42 @@ class PostViewSet(viewsets.ModelViewSet):
 
         post.celery_task_id = task.id
         post.save()
+
+    def update(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        is_owner = group.owner.id == request.user.id
+        is_worker = group.workers.filter(id=request.user.id).exists()
+        
+        if not (is_owner or is_worker):
+            return Response({'error': 'Vous n\'êtes pas autorisé à éditer ce post'}, status=status.HTTP_403_FORBIDDEN)
+        
+        old_date = post.date_publication
+
+        serializer = PostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            updated_post = serializer.save()
+
+            date_str = request.data.get("date_publication")
+            new_date_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
+            new_date = new_date_aw.astimezone(pytz.utc)
+
+            if old_date != new_date and new_date > now():
+                if post.celery_task_id:
+                    try:
+                        current_app.control.revoke(post.celery_task_id, terminate=True)
+                    except Exception as e:
+                        pass
+
+                task = publish_post.apply_async(args=[post.id], eta=new_date)
+                updated_post.celery_task_id = task.id
+                updated_post.date_publication = new_date
+
+            updated_post.save()
+            return Response(PostSerializer(updated_post).data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def destroy(self, request, *args, **kwargs):
         post = self.get_object()
