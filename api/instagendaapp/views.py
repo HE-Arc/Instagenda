@@ -327,6 +327,32 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = PostImageSerializer(images, many=True)
         return Response(serializer.data)
     
+    @action(detail=True, methods=['put'])
+    def validate(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'Vous n\'êtes pas autorisé à valider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        post.status = 'validated'
+        post.save()
+
+        return Response({'message': 'Post validé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
+    
+        
+    @action(detail=True, methods=['put'])
+    def unvalidate(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'Vous n\'êtes pas autorisé dévalider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        post.status = 'unvalidated'
+        post.save()
+
+        return Response({'message': 'Post remis dévalidé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
 
 def hasRights(group, request):
     is_owner = group.owner.id == request.user.id

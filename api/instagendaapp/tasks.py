@@ -13,15 +13,13 @@ def publish_post(post_id):
             updateStatus(post, "expired")
             return {"error": "Le post n'a pas été encore validé"}
 
-        # Récupérer l'access token de l'utilisateur
         instagram_user_id = post.group_owner.owner.profile.instagram_user_id
         access_token = post.group_owner.owner.profile.instagram_access_token
 
         if not access_token or not instagram_user_id:
             updateStatus(post, "expired")
             return {"error": "Aucun access_token trouvé pour cet utilisateur"}
-        
-        # Récupérer les images du post
+
         images = PostImage.objects.filter(post=post)
 
         media_container = []
@@ -29,6 +27,7 @@ def publish_post(post_id):
             # Créer un conteneur pour chaque image (et si il y a plusieurs images, créer les objets carousel)
             image_data = {
                 "image_url": f"{settings.BACKEND_URL}/{image.image_url}",
+                #"image_url": "https://cdn.pixabay.com/photo/2013/07/12/14/07/basketball-147794_1280.png", # Dev local
                 "access_token": access_token,
                 "is_carousel_item": len(images) > 1
             }
@@ -47,9 +46,7 @@ def publish_post(post_id):
 
         container_id = None
 
-        # Si le media_container contient plusieurs images, on crée un conteneur carousel
         if len(media_container) != 1:
-            # Sinon, on crée un conteneur carousel avec toutes les images
             carousel_container = requests.post(
                 f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media",
                 data={
@@ -66,12 +63,11 @@ def publish_post(post_id):
             container_id = carousel_data["id"]
         else:
             container_id = media_container[0]
-        
+
         if not container_id:
             updateStatus(post, "expired")
             return {"error": "Erreur lors de la création du conteneur"}
-        
-        # Puis on publie le post
+
         publish_response = requests.post(
             f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media_publish",
             data={
@@ -89,7 +85,7 @@ def publish_post(post_id):
 
     except Post.DoesNotExist:
         return {"error": f"Post avec l'ID {post_id} introuvable"}
-    
+
 def updateStatus(post, status):
     post.status = status
     post.save()

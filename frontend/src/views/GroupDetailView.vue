@@ -2,7 +2,15 @@
 import { ref, onBeforeMount, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
-import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput, QIcon } from 'quasar'
+import {
+  QBtn,
+  QDialog,
+  QCard,
+  QCardSection,
+  QCardActions,
+  QInput,
+  QIcon
+} from 'quasar'
 import router from '@/router'
 import { useAuth, useErrorMessage } from '@/components/store'
 
@@ -50,7 +58,9 @@ const filteredPosts = computed(() => {
   }
 
   for (const key in grouped) {
-    grouped[key].sort((a, b) => -(new Date(b.date_publication) - new Date(a.date_publication)))
+    grouped[key].sort(
+      (a, b) => -(new Date(b.date_publication) - new Date(a.date_publication))
+    )
   }
 
   return grouped
@@ -82,17 +92,23 @@ const fetchGroup = async () => {
     title.value = group.value.name
     posts.value = response.data.posts
   } catch (error) {
-    errorMessage.value = 'Erreur lors de la récupération du groupe : ' + error.response?.data.error || error
+    errorMessage.value =
+      'Erreur lors de la récupération du groupe : ' +
+        error.response?.data.error || error
     router.push('/')
   }
 }
 
 const removeWorker = async (userId) => {
   try {
-    await axios.put(`/groups/${route.params.id}/remove_user/`, { user_id: userId })
-    workers.value = workers.value.filter(user => user.id !== userId)
+    await axios.put(`/groups/${route.params.id}/remove_user/`, {
+      user_id: userId
+    })
+    workers.value = workers.value.filter((user) => user.id !== userId)
   } catch (error) {
-    errorMessage.value = 'Erreur lors de la suppression du membre : ' + error.response?.data.error || error
+    errorMessage.value =
+      'Erreur lors de la suppression du membre : ' +
+        error.response?.data.error || error
   }
 }
 
@@ -100,34 +116,66 @@ const addWorker = async () => {
   if (!newUserName.value.trim()) return
 
   try {
-    const response = await axios.put(`/groups/${route.params.id}/add_user/`, { username: newUserName.value })
+    const response = await axios.put(`/groups/${route.params.id}/add_user/`, {
+      username: newUserName.value
+    })
     workers.value.push(response.data.user)
     newUserName.value = ''
     isModalOpen.value = false
   } catch (error) {
-    errorMessage.value = 'Erreur lors de l\'ajout du membre : ' + error.response?.data.error || error
+    errorMessage.value =
+      "Erreur lors de l'ajout du membre : " +
+        error.response?.data.error || error
     isModalOpen.value = false
   }
 }
 
 const createPost = async () => {
-  router.push("/create-post/" + group.value.id)
+  router.push('/create-post/' + group.value.id)
 }
 
 const editPost = async (postId) => {
-  router.push("/update-post/" + postId)
+  router.push('/update-post/' + postId)
 }
 
 const displayPost = async (postId) => {
-  router.push("/display-post/" + postId)
+  router.push('/display-post/' + postId)
 }
 
 const deletePost = async (postId) => {
   try {
     await axios.delete(`/posts/${postId}/`)
-    posts.value = posts.value.filter(post => post.id !== postId)
+    posts.value = posts.value.filter((post) => post.id !== postId)
   } catch (error) {
-    errorMessage.value = 'Erreur lors de la suppression du post : ' + error.response?.data.error || error
+    errorMessage.value =
+      'Erreur lors de la suppression du post : ' +
+        error.response?.data.error || error
+  }
+}
+
+const validatePost = async (postId) => {
+  try
+  {
+    await axios.put(`/posts/${postId}/validate/`)
+    await fetchGroup()
+  }
+  catch (error) {
+    errorMessage.value =
+      'Erreur lors de la validation du post : ' +
+        error.response?.data.error || error
+  }
+}
+
+const unvalidatePost = async (postId) => {
+  try
+  {
+    await axios.put(`/posts/${postId}/unvalidate/`)
+    await fetchGroup()
+  }
+  catch (error) {
+    errorMessage.value =
+      'Erreur lors de la dévalidation du post : ' +
+        error.response?.data.error || error
   }
 }
 
@@ -150,18 +198,43 @@ onBeforeMount(() => {
 
           <h5 class="section-title">Community Managers</h5>
           <div class="workers-list">
-            <div v-for="worker in workers" :key="worker.id" class="worker-item">
+            <div
+              v-for="worker in workers"
+              :key="worker.id"
+              class="worker-item"
+            >
               <span>{{ worker.username }}</span>
-              <QBtn v-if="isOwner(group)" flat dense round color="red" icon="delete" @click="removeWorker(worker.id)" />
+              <QBtn
+                v-if="isOwner(group)"
+                flat
+                dense
+                round
+                color="red"
+                icon="delete"
+                @click="removeWorker(worker.id)"
+              />
             </div>
           </div>
         </div>
-        <QBtn v-if="isOwner(group)" rounded label="Ajouter un membre" color="primary" class="add-btn" @click="isModalOpen = true" />
+        <QBtn
+          v-if="isOwner(group)"
+          rounded
+          label="Ajouter un membre"
+          color="primary"
+          class="add-btn"
+          @click="isModalOpen = true"
+        />
       </div>
 
       <div class="right-panel">
         <div class="header">
-          <QBtn rounded label="créer un post" color="primary" class="create-post-btn" @click="createPost" />
+          <QBtn
+            rounded
+            label="créer un post"
+            color="primary"
+            class="create-post-btn"
+            @click="createPost"
+          />
         </div>
 
         <div class="posts-list">
@@ -171,7 +244,10 @@ onBeforeMount(() => {
             class="post-section"
           >
             <div class="section-header" @click="toggleSection(key)">
-              <QIcon :name="sectionStates[key] ? 'expand_more' : 'chevron_right'" class="arrow" />
+              <QIcon
+                :name="sectionStates[key] ? 'expand_more' : 'chevron_right'"
+                class="arrow"
+              />
               {{ label }} ({{ filteredPosts[key].length }})
             </div>
 
@@ -187,8 +263,41 @@ onBeforeMount(() => {
                   <p>Planifié pour {{ formatDate(post.date_publication) }}</p>
                 </div>
                 <div class="post-actions">
-                  <QBtn flat dense round icon="edit" @click.stop="editPost(post.id)" />
-                  <QBtn flat dense round color="red" icon="delete" @click.stop="deletePost(post.id)" />
+                  <QBtn
+                    v-if="key === 'validated' && isOwner(group)"
+                    flat
+                    dense
+                    round
+                    color="red"
+                    icon="cancel"
+                    :title="'Dévalider le post'"
+                    @click.stop="unvalidatePost(post.id)"
+                  />
+                  <QBtn
+                    v-if="key === 'unvalidated' && isOwner(group)"
+                    flat
+                    dense
+                    round
+                    color="green"
+                    icon="check"
+                    :title="'Valider le post'"
+                    @click.stop="validatePost(post.id)"
+                  />
+                  <QBtn
+                    flat
+                    dense
+                    round
+                    icon="edit"
+                    @click.stop="editPost(post.id)"
+                  />
+                  <QBtn
+                    flat
+                    dense
+                    round
+                    color="red"
+                    icon="delete"
+                    @click.stop="deletePost(post.id)"
+                  />
                 </div>
               </div>
             </div>
@@ -202,10 +311,21 @@ onBeforeMount(() => {
             <h5>Ajouter un membre</h5>
           </QCardSection>
           <QCardSection>
-            <QInput v-model="newUserName" label="Nom du membre" outlined rounded />
+            <QInput
+              v-model="newUserName"
+              label="Nom du membre"
+              outlined
+              rounded
+            />
           </QCardSection>
           <QCardActions align="center">
-            <QBtn label="Ajouter" rounded color="primary" @click="addWorker" class="modal-btn" />
+            <QBtn
+              label="Ajouter"
+              rounded
+              color="primary"
+              @click="addWorker"
+              class="modal-btn"
+            />
           </QCardActions>
         </QCard>
       </QDialog>
@@ -274,7 +394,7 @@ onBeforeMount(() => {
 .header {
   position: sticky;
   top: 0;
-  background: $white; // Remplace par #fff si nécessaire
+  background: $white;
   z-index: 2;
   padding-bottom: 10px;
   text-align: right;
