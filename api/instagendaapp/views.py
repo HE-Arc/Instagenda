@@ -120,7 +120,7 @@ class IgViewSet(viewsets.ViewSet):
             ig_profile = request.user.profile
 
             if ig_profile.instagram_access_token and ig_profile.instagram_user_id:
-                # Si le username est vide, on le récupère depuis l'API Meta
+                # Get username from Meta API if we don't have it already
                 if not ig_profile.instagram_username:
                     url = f"{settings.INSTAGRAM_API_URL}/{ig_profile.instagram_user_id}"
                     params = {
@@ -321,6 +321,7 @@ class PostViewSet(viewsets.ModelViewSet):
             new_date_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
             new_date = new_date_aw.astimezone(pytz.utc)
 
+            # Need to redo the celery task if the publication date has changed
             if old_date != new_date and new_date > now():
                 if post.celery_task_id:
                     try:
@@ -345,6 +346,7 @@ class PostViewSet(viewsets.ModelViewSet):
                     )
                 )
 
+                # Need to redo the images list if the current one is different from the request data
                 if is_different:
                     for image in old_images:
                         try:
@@ -393,6 +395,7 @@ class PostViewSet(viewsets.ModelViewSet):
         
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+    # Can't list all posts
     def list(self, request, *args, **kwargs):
         return Response({'detail': 'Accès à cet endpoint non autorisé.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         
@@ -408,11 +411,10 @@ class PostViewSet(viewsets.ModelViewSet):
         post = self.get_object()
         group = post.group_owner
 
-        # Vérifie que l'utilisateur est bien le propriétaire du groupe
         if group.owner.id != request.user.id:
             return Response({'error': 'Vous n\'êtes pas autorisé à valider ce post.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Vérifie que l'utilisateur a un profil Instagram lié
+        # The user need to have a linked instagram account to validate a post
         try:
             ig_profile = request.user.profile
             if not ig_profile.instagram_access_token or not ig_profile.instagram_user_id:
@@ -441,6 +443,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return Response({'message': 'Post dévalidé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
 
+# Function to check if the user from the request is the owner or a worker of the group that he wants to do something
 def hasRights(group, request):
     is_owner = group.owner.id == request.user.id
     is_worker = group.workers.filter(id=request.user.id).exists()
