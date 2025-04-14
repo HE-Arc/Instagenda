@@ -6,9 +6,9 @@ from .models import Post, PostImage
 @shared_task
 def publish_post(post_id):
     try:
-        print("task executing...")
         post = Post.objects.get(id=post_id)
 
+        # The post need to be validated to be posted
         if post.status != "validated":
             updateStatus(post, "expired")
             return {"error": "Le post n'a pas été encore validé"}
@@ -24,10 +24,10 @@ def publish_post(post_id):
 
         media_container = []
         for image in images:
-            # Créer un conteneur pour chaque image (et si il y a plusieurs images, créer les objets carousel)
+            # Create container for each image
+            # if there are several images then create the containers in carousel mode for instagram
             image_data = {
                 "image_url": f"{settings.BACKEND_URL}/{image.image_url}",
-                #"image_url": "https://cdn.pixabay.com/photo/2013/07/12/14/07/basketball-147794_1280.png", # Dev local
                 "access_token": access_token,
                 "is_carousel_item": len(images) > 1
             }

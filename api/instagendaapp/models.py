@@ -34,6 +34,7 @@ class Post(models.Model):
     def __str__(self):
         return f"Post {self.name} planifié à {self.date_publication}"
 
+# Used in PostSerializer to define the images path in the server
 def upload_to(instance, filename):
     return f'post_images/{instance.post.id}/{filename}'
 

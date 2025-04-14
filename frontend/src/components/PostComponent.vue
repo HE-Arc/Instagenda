@@ -117,9 +117,7 @@ const handleAction = async () => {
 
     // Add all images in the order of the draggable
     files.value.forEach((file) => {
-      if (!file.id) {
-        formData.append('uploaded_images', file);
-      }
+      formData.append('uploaded_images', file);
     });
 
     if (!props.update) {
@@ -138,19 +136,16 @@ const handleAction = async () => {
       postDate.value = '';
       postTime.value = '';
       files.value = [];
+
+      router.push('/groups/' + route.params.id);
     } else {
       await axios.put(`/posts/${props.postid}/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-    }
-    if (props.update) {
       router.push('/groups/' + groupId.value);
-    } else {
-      router.push('/groups/' + route.params.id);
     }
-
   } catch (error) {
     const action = props.update ? 'la mise à jour' : 'la création';
     errorMessage.value = `Erreur lors de ${action} du post : ` + (error.response?.data.error || error);
@@ -158,7 +153,18 @@ const handleAction = async () => {
 };
 
 const onFilesAdded = (newFiles) => {
-  files.value = files.value.concat(Array.from(newFiles));
+  const uniqueNewFiles = Array.from(newFiles).filter(newFile => {
+    return !files.value.some(existingFile =>
+      existingFile.name === newFile.name &&
+      existingFile.size === newFile.size
+    );
+  });
+
+  if (uniqueNewFiles.length < newFiles.length) {
+    errorMessage.value = 'Certaines images seront ignorées car elles sont déjà présentes dans la liste.';
+  }
+
+  files.value = files.value.concat(uniqueNewFiles);
 };
 
 const onFilesRemoved = (removedFiles) => {
