@@ -280,6 +280,30 @@ class PostViewSet(viewsets.ModelViewSet):
                 updated_post.celery_task_id = task.id
                 updated_post.date_publication = new_date
 
+            uploaded_images = request.FILES.getlist("uploaded_images")
+            if uploaded_images:
+                old_images = list(PostImage.objects.filter(post=post).order_by('order'))
+
+                is_different = (
+                    len(uploaded_images) != len(old_images) or
+                    any(
+                        uploaded_images[i].name != old_images[i].image.name.split('/')[-1] or
+                        uploaded_images[i].size != old_images[i].image.size
+                        for i in range(min(len(uploaded_images), len(old_images)))
+                    )
+                )
+
+                if is_different:
+                    for image in old_images:
+                        try:
+                            image.image.delete(save=False)
+                        except Exception as e:
+                            print(f"Erreur lors de la suppression d'une image : {e}")
+                    PostImage.objects.filter(post=post).delete()
+
+                    for order, image in enumerate(uploaded_images):
+                        PostImage.objects.create(post=post, image=image, order=order)
+
             updated_post.status = "unvalidated"
             updated_post.save()
             return Response(PostSerializer(updated_post).data)
@@ -358,12 +382,12 @@ class PostViewSet(viewsets.ModelViewSet):
         group = post.group_owner
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'Vous n\'êtes pas autorisé dévalider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas autorisé à dévalider ce post.'}, status=status.HTTP_403_FORBIDDEN)
 
         post.status = 'unvalidated'
         post.save()
 
-        return Response({'message': 'Post remis dévalidé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
+        return Response({'message': 'Post dévalidé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
 
 def hasRights(group, request):
     is_owner = group.owner.id == request.user.id
