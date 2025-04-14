@@ -21,12 +21,11 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
     def update(self, instance, validated_data):
-        # Vérifier si un password est fourni
+        # Check if there is a password in the data
         password = validated_data.pop('password', None)
         if password:
-            instance.set_password(password)  # Met à jour le mot de passe en le hachant
+            instance.set_password(password)
 
-        # Mise à jour des autres champs
         return super().update(instance, validated_data)
 
 class PostImageSerializer(serializers.ModelSerializer):
@@ -80,13 +79,13 @@ class ChangePasswordSerializer(serializers.Serializer):
     confirm_new_password = serializers.CharField(write_only=True, required=True)
 
     def validate(self, data):
-        user = self.context['request'].user  # Récupère l'utilisateur connecté
+        user = self.context['request'].user
 
-        # Vérifie si l'ancien mot de passe est correct
+        # Check current password
         if not check_password(data['current_password'], user.password):
             raise serializers.ValidationError({"current_password": "Mot de passe actuel incorrect."})
 
-        # Vérifie si les nouveaux mots de passe correspondent
+        # Check new passwords
         if data['new_password'] != data['confirm_new_password']:
             raise serializers.ValidationError({"confirm_new_password": "Les mots de passe ne correspondent pas."})
 
@@ -94,6 +93,6 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         user = self.context['request'].user
-        user.set_password(self.validated_data['new_password'])  # Hash et met à jour le mot de passe
+        user.set_password(self.validated_data['new_password'])
         user.save()
         return user
