@@ -26,8 +26,8 @@ def publish_post(post_id):
         for image in images:
             # Créer un conteneur pour chaque image (et si il y a plusieurs images, créer les objets carousel)
             image_data = {
-                "image_url": f"{settings.BACKEND_URL}/{image.image_url}",
-                #"image_url": "https://cdn.pixabay.com/photo/2013/07/12/14/07/basketball-147794_1280.png", # Dev local
+                #"image_url": f"{settings.BACKEND_URL}/{image.image_url}",
+                "image_url": "https://cdn.pixabay.com/photo/2013/07/12/14/07/basketball-147794_1280.png", # Dev local
                 "access_token": access_token,
                 "is_carousel_item": len(images) > 1
             }
