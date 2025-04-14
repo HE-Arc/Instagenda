@@ -27,8 +27,7 @@ class Post(models.Model):
     group_owner = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="owned_posts")
     caption = models.TextField(blank=True, null=True)
     date_publication = models.DateTimeField()
-    validated = models.BooleanField(default=False)
-    status = models.CharField(max_length=20, default="planified")
+    status = models.CharField(max_length=20, default="unvalidated")
     celery_task_id = models.TextField(blank=True, null=True)
 
     def __str__(self):

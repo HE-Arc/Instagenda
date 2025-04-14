@@ -26,6 +26,7 @@ const postContent = ref('');
 const postImage = ref('');
 const postDate = ref('');
 const postTime = ref('');
+const groupId = ref(null);
 const files = ref([]);
 const existingImages = ref([]);
 const uploaderRef = ref(null);
@@ -54,6 +55,8 @@ if (props.update) {
       const response = await axios.get(`/posts/${props.postid}/`);
       postName.value = response.data.name;
       postContent.value = response.data.caption;
+
+      groupId.value = response.data.group_owner;
 
       const [datePart, timePart] = response.data.date_publication.split('T');
       postDate.value = datePart.replace(/-/g, '/');
@@ -136,9 +139,18 @@ const handleAction = async () => {
       postTime.value = '';
       files.value = [];
     } else {
-      console.log("Update post")
+      await axios.put(`/posts/${props.postid}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
     }
-    router.push('/groups/' + route.params.id);
+    if (props.update) {
+      router.push('/groups/' + groupId.value);
+    } else {
+      router.push('/groups/' + route.params.id);
+    }
+
   } catch (error) {
     const action = props.update ? 'la mise à jour' : 'la création';
     errorMessage.value = `Erreur lors de ${action} du post : ` + (error.response?.data.error || error);
@@ -170,12 +182,21 @@ const getObjectUrl = (file) => {
 </script>
 <template>
   <main class="edit-post-container">
-    <h5>{{props.title}}</h5>
+    <QBtn
+      flat
+      dense
+      icon="arrow_back"
+      label="Retour"
+      @click="router.back()"
+      class="back-btn"
+      color="primary"
+    />
+    <h5 class="title">{{props.title}}</h5>
     <QInput v-model="postName" label="Nom du post" filled :rules="[val => !!val || 'Le nom est requis']" class="q-mb-md" />
     <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis']" type="textarea" class="q-mb-md" />
     <q-uploader
       ref="uploaderRef"
-      label="Photos du post"
+      label="Photos du post (format recommandé 1:1)"
       @added="onFilesAdded"
       @removed="onFilesRemoved"
       :auto-upload="false"
@@ -210,6 +231,15 @@ const getObjectUrl = (file) => {
   margin: 0 auto;
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+.title {
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  align-self: flex-start;
+  margin-bottom: 10px;
 }
 
 .date-time-container {
