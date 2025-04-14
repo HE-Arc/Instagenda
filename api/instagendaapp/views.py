@@ -114,6 +114,58 @@ class IgViewSet(viewsets.ViewSet):
             return Response(long_lived_response.json(), status=long_lived_response.status_code)
         return Response(response.json(), status=response.status_code)
     
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def status(self, request):
+        try:
+            ig_profile = request.user.profile
+
+            if ig_profile.instagram_access_token and ig_profile.instagram_user_id:
+                # Si le username est vide, on le récupère depuis l'API Meta
+                if not ig_profile.instagram_username:
+                    url = f"{settings.INSTAGRAM_API_URL}/{ig_profile.instagram_user_id}"
+                    params = {
+                        "fields": "username",
+                        "access_token": ig_profile.instagram_access_token
+                    }
+
+                    response = requests.get(url, params=params)
+                    if response.status_code == 200:
+                        data = response.json()
+                        username = data.get("username")
+                        if username:
+                            ig_profile.instagram_username = username
+                            ig_profile.save()
+                    else:
+                        return Response({
+                            "connected": False,
+                            "error": "Erreur lors de la récupération du nom d'utilisateur depuis Instagram."
+                        }, status=response.status_code)
+                return Response({
+                    "connected": True,
+                    "username": ig_profile.instagram_username
+                })
+
+        except IgProfile.DoesNotExist:
+            pass
+
+        return Response({
+            "connected": False,
+            "message": "Aucun compte Instagram lié"
+        })
+
+
+    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    def disconnect(self, request):
+        try:
+            ig_profile = request.user.profile
+            ig_profile.instagram_access_token = None
+            ig_profile.instagram_user_id = None
+            ig_profile.instagram_username = None
+            ig_profile.save()
+            return Response({"message": "Compte Instagram déconnecté avec succès."})
+        except IgProfile.DoesNotExist:
+            return Response({"error": "Aucun compte à déconnecter."}, status=404)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
