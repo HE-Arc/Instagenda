@@ -71,50 +71,50 @@ const savePassword = () => {
   <div class="main">
     <div class="card">
       <div class="card-header">
-        <h3>Instagram account linked</h3>
+        <h3>Compte Instagram</h3>
       </div>
       <div class="card-body">
         <a :href="instagramAuthUrl" class="instagram-button">
           <img src="/assets/images/instagram.svg" alt="Instagram" class="instagram-icon" />
-          Link with Instagram
+          Lier un compte Instagram
         </a>
       </div>
     </div>
 
     <div class="card profile-card">
       <div class="card-header">
-        <h3>Profile informations</h3>
+        <h3>Informations sur le profile</h3>
       </div>
       <div class="card-body">
         <div class="input-group">
-          <label for="username">Username</label>
-          <QInput v-model="profile.username" id="username" label="Username" outlined />
+          <label for="username">Nom d'utilisateur</label>
+          <QInput v-model="profile.username" id="username" label="Nom d'utilisateur" outlined />
         </div>
         <div class="save-button">
-          <QBtn label="Save" color="primary" @click="saveProfile" />
+          <QBtn label="Modifier" color="primary" @click="saveProfile" />
         </div>
       </div>
     </div>
 
     <div class="card password-card">
       <div class="card-header">
-        <h3>Modify password</h3>
+        <h3>Modifier le mot de passe</h3>
       </div>
       <div class="card-body">
         <div class="input-group">
-          <label for="current-password">Current Password</label>
-          <QInput v-model="currentPassword" id="current-password" type="password" label="Current Password" outlined />
+          <label for="current-password">Mot de passe actuel</label>
+          <QInput v-model="currentPassword" id="current-password" type="password" label="Mot de passe actuel" outlined />
         </div>
         <div class="input-group">
-          <label for="new-password">New Password</label>
-          <QInput v-model="newPassword" id="new-password" type="password" label="New Password" outlined />
+          <label for="new-password">Nouveau mot de passe</label>
+          <QInput v-model="newPassword" id="new-password" type="password" label="Nouveau mot de passe" outlined />
         </div>
         <div class="input-group">
-          <label for="confirm-password">Confirm New Password</label>
-          <QInput v-model="confirmPassword" id="confirm-password" type="password" label="Confirm New Password" outlined />
+          <label for="confirm-password">Confirmer le nouveau mot de passe</label>
+          <QInput v-model="confirmPassword" id="confirm-password" type="password" label="Confirmer le nouveau mot de passe" outlined />
         </div>
         <div class="save-button">
-          <QBtn label="Save Password" color="primary" @click="savePassword" />
+          <QBtn label="Modifier" color="primary" @click="savePassword" />
         </div>
       </div>
     </div>

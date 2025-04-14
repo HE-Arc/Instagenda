@@ -280,6 +280,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 updated_post.celery_task_id = task.id
                 updated_post.date_publication = new_date
 
+            updated_post.status = "unvalidated"
             updated_post.save()
             return Response(PostSerializer(updated_post).data)
 
@@ -326,6 +327,43 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = PostImageSerializer(images, many=True)
         return Response(serializer.data)
     
+    @action(detail=True, methods=['put'])
+    def validate(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        # Vérifie que l'utilisateur est bien le propriétaire du groupe
+        if group.owner.id != request.user.id:
+            return Response({'error': 'Vous n\'êtes pas autorisé à valider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Vérifie que l'utilisateur a un profil Instagram lié
+        try:
+            ig_profile = request.user.profile
+            if not ig_profile.instagram_access_token or not ig_profile.instagram_user_id:
+                raise AttributeError()
+        except (IgProfile.DoesNotExist, AttributeError):
+            return Response(
+                {'error': 'Vous devez lier un compte Instagram avant de valider un post. Veuillez vous rendre dans la page de profil.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        post.status = 'validated'
+        post.save()
+
+        return Response({'message': 'Post validé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def unvalidate(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'Vous n\'êtes pas autorisé dévalider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        post.status = 'unvalidated'
+        post.save()
+
+        return Response({'message': 'Post remis dévalidé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
 
 def hasRights(group, request):
     is_owner = group.owner.id == request.user.id
