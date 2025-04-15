@@ -148,7 +148,7 @@ const savePassword = () => {
       <div class="card-body">
         <div class="input-group">
           <label for="username">Nom d'utilisateur</label>
-          <QInput v-model="profile.username" id="username" label="Nom d'utilisateur" outlined />
+          <QInput v-model="profile.username" id="username" label="Nom d'utilisateur" outlined :rules="[val => !!val || 'Le nom d\'utilisateur est requis', val => val.length >= 4 || 'Le nom d\'utilisateur doit contenir au moins 4 caractères', val => val.length <= 50 || 'Le nom d\'utilisateur doit contenir au maximum 50 caractères' ]"/>
         </div>
         <div class="save-button">
           <QBtn label="Modifier" color="primary" @click="saveProfile" />
@@ -168,11 +168,11 @@ const savePassword = () => {
         </div>
         <div class="input-group">
           <label for="new-password">Nouveau mot de passe</label>
-          <QInput v-model="newPassword" id="new-password" type="password" label="Nouveau mot de passe" outlined />
+          <QInput v-model="newPassword" id="new-password" type="password" label="Nouveau mot de passe" outlined :rules="[val => !!val || 'Le mot de passe est requis', val => val.length >= 6 || 'Le mot de passe doit contenir au moins 6 caractères', val => val.length <= 255 || 'Le mot de passe doit contenir au maximum 255 caractères' ]" />
         </div>
         <div class="input-group">
           <label for="confirm-password">Confirmer le nouveau mot de passe</label>
-          <QInput v-model="confirmPassword" id="confirm-password" type="password" label="Confirmer le nouveau mot de passe" outlined />
+          <QInput v-model="confirmPassword" id="confirm-password" type="password" label="Confirmer le nouveau mot de passe" outlined :rules="[val => val === newPassword.value || 'Les mots de passe doivent correspondre' ]" />
         </div>
         <div class="save-button">
           <QBtn label="Modifier" color="primary" @click="savePassword" />

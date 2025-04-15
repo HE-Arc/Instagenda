@@ -126,7 +126,7 @@ const isOwner = (group) => {
           <h5>Créer une équipe</h5>
         </QCardSection>
         <QCardSection>
-          <QInput v-model="groupName" label="Nom de l'équipe" filled :rules="[val => !!val || 'Le nom est requis']" />
+          <QInput v-model="groupName" label="Nom de l'équipe" filled :rules="[val => !!val || 'Le nom d\'équipe est requis', val => val.length >= 6 || 'Le nom d\'équipe doit contenir au moins 6 caractères', val => val.length <= 255 || 'Le nom d\'équipe doit contenir au maximum 255 caractères' ]" />
         </QCardSection>
         <QCardActions align="right">
           <QBtn label="Créer" color="primary" @click="createGroup" :disabled="!groupName.trim()" />
