@@ -31,7 +31,6 @@ router.register(r'posts', PostViewSet, basename='post')
 router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('backend-status/', backend_status),
     path('', include(router.urls)),
 ]

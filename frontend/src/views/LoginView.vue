@@ -27,7 +27,7 @@ const login = async () => {
 
 <template>
   <main>
-    <div class="fullscreen bg-white flex flex-center column container">
+    <div class="bg-white flex flex-center column container">
       <!-- Logo -->
       <QImg
         src="/assets/images/logo_slogan.png"
@@ -61,7 +61,8 @@ const login = async () => {
 }
 
 .container {
-  margin-bottom: 10vh;
+  min-height: 100vh;
+  padding-bottom: 10%;
 }
 
 .form-container {

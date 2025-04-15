@@ -1,18 +1,23 @@
 <script setup>
+import { useRoute } from 'vue-router'
 import { RouterLink, RouterView } from 'vue-router'
 import { QBtn, QImg } from 'quasar'
 import axios from 'axios'
 import router from '@/router'
 import ErrorBanner from '@/components/ErrorBanner.vue'
 
+const route = useRoute()
+
 async function logout() {
   await axios.post('/logout/')
   router.push('/login')
 }
+
+const hideLayoutOnRoutes = ['/login', '/register']
 </script>
 
 <template>
-  <header class="app-header">
+  <header v-if="!hideLayoutOnRoutes.includes(route.path)" class="app-header">
     <nav class="wrapper">
       <RouterLink to="/" class="logo">
         <QImg src="/assets/images/logo.png" fit="contain" class="logo-img" />
@@ -31,7 +36,7 @@ async function logout() {
     <RouterView />
   </main>
 
-  <footer class="app-footer">
+  <footer class="app-footer" v-if="!hideLayoutOnRoutes.includes(route.path)">
     <QBtn to="/about" label="À propos" color="primary" flat class="about-btn" />
   </footer>
 </template>

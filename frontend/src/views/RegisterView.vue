@@ -26,7 +26,7 @@ const register = async () => {
 
 <template>
   <main>
-    <div class="fullscreen bg-white flex flex-center column container">
+    <div class="bg-white flex flex-center column container">
       <!-- Logo -->
       <QImg
         src="/assets/images/logo_slogan.png"
@@ -36,9 +36,8 @@ const register = async () => {
 
       <!-- Form -->
       <div class="form-container">
-        <QInput v-model="username" label="Nom d'utilisateur" rounded outlined color="primary" class="q-mb-md"/>
-        <QInput v-model="password" label="Mot de passe" type="password" rounded outlined color="primary" class="q-mb-md"/>
-
+        <QInput v-model="username" label="Nom d'utilisateur" rounded outlined color="primary" class="q-mb-md" :rules="[val => !!val || 'Le nom d\'utilisateur est requis', val => val.length >= 4 || 'Le nom d\'utilisateur doit contenir au moins 4 caractères', val => val.length <= 50 || 'Le nom d\'utilisateur doit contenir au maximum 50 caractères' ]"/>
+        <QInput v-model="password" label="Mot de passe" type="password" rounded outlined color="primary" class="q-mb-md" :rules="[val => !!val || 'Le mot de passe est requis', val => val.length >= 6 || 'Le mot de passe doit contenir au moins 6 caractères']"/>
         <QBtn label="S'enregistrer" @click="register" class="full-width btn-register" color="primary" rounded/>
       </div>
 
@@ -61,7 +60,8 @@ const register = async () => {
 }
 
 .container {
-  margin-bottom: 10vh;
+  min-height: 100vh;
+  padding-bottom: 10%;
 }
 
 .form-container {

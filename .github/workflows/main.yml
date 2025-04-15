@@ -32,7 +32,7 @@ jobs:
 
       - name: Restart Celery worker
         run: |
-          pkill -f 'celery'
+          pkill -f 'celery' || true
           sudo systemctl start celery
 
       - name: Build Vue.js
