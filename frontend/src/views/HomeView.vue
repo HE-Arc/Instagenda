@@ -24,6 +24,9 @@ const createGroup = async () => {
     return;
   }
 
+  if (groupName.value.length < 3 || groupName.value.length > 50) {
+    return;
+  }
   try {
     await axios.post('/groups/', { name: groupName.value });
     isModalOpen.value = false;
@@ -126,7 +129,7 @@ const isOwner = (group) => {
           <h5>Créer une équipe</h5>
         </QCardSection>
         <QCardSection>
-          <QInput v-model="groupName" label="Nom de l'équipe" filled :rules="[val => !!val || 'Le nom d\'équipe est requis', val => val.length >= 6 || 'Le nom d\'équipe doit contenir au moins 6 caractères', val => val.length <= 255 || 'Le nom d\'équipe doit contenir au maximum 255 caractères' ]" />
+          <QInput v-model="groupName" label="Nom de l'équipe" filled :rules="[val => !!val || 'Le nom d\'équipe est requis', val => val.length >= 3 || 'Le nom d\'équipe doit contenir au moins 3 caractères', val => val.length <= 50 || 'Le nom d\'équipe doit contenir au maximum 50 caractères' ]" />
         </QCardSection>
         <QCardActions align="right">
           <QBtn label="Créer" color="primary" @click="createGroup" :disabled="!groupName.trim()" />

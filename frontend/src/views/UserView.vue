@@ -58,8 +58,7 @@ onMounted(async () => {
 })
 
 const saveProfile = () => {
-  if (profile.value.username === '') {
-    alert("Le nom d'utilisateur est requis")
+  if (profile.value.username === '' || profile.value.username.length < 4 || profile.value.username.length > 50) {
     return
   }
   updateUsername()
@@ -73,8 +72,7 @@ const saveProfile = () => {
 }
 
 const savePassword = () => {
-  if (newPassword.value !== confirmPassword.value) {
-    alert("Les mots de passe ne correspondent pas")
+  if (newPassword.value !== confirmPassword.value || !newPassword.value || !confirmPassword.value || newPassword.value.length < 6 || newPassword.value.length > 255) {
     return
   }
 

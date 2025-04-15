@@ -12,6 +12,10 @@ const { errorMessage } = useErrorMessage()
 
 const login = async () => {
   try {
+    if (!username.value || !password.value) {
+      errorMessage.value = 'Veuillez remplir tous les champs.'
+      return
+    }
     await axios.post('/login/', {
       username: username.value,
       password: password.value

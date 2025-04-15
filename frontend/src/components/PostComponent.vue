@@ -99,7 +99,7 @@ if (props.update) {
 }
 
 const handleAction = async () => {
-  if (!postName.value.trim() || !postContent.value.trim() || !postDate.value || !postTime.value || files.value.length === 0) {
+  if (!postName.value.trim() || !postContent.value.trim() || !postDate.value || !postTime.value || files.value.length === 0 || postName.value.length < 3 || postName.value.length > 50 || postContent.value.length < 3 || postContent.value.length > 255) {
     return;
   }
 

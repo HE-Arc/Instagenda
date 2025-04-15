@@ -12,6 +12,16 @@ const { errorMessage } = useErrorMessage()
 
 const register = async () => {
   try {
+    if (!username.value || !password.value) {
+      errorMessage.value = 'Veuillez remplir tous les champs.'
+      return
+    }
+    if (username.value.length < 4 || username.value.length > 50) {
+      return
+    }
+    if (password.value.length < 6 || password.value.length > 255) {
+      return
+    }
     await axios.post('/register/', {
       username: username.value,
       password: password.value
