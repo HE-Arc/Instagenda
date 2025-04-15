@@ -1,6 +1,6 @@
 FROM python:3.11.9-slim
 
-# Installer dépendances système
+# Install all dependencies
 RUN apt-get update && apt-get install -y \
     curl build-essential git libpq-dev wget gnupg \
     redis-server postgresql postgresql-contrib \
@@ -10,34 +10,34 @@ RUN apt-get update && apt-get install -y \
     && pip install pipenv \
     && apt-get clean
 
-# Créer dossier app
+# Create the app directory
 WORKDIR /app
 
-# Copier tous les fichiers du projet
+# Copy all the files of the project
 COPY . .
 
-# Installer backend (Django)
+# Install backend (Django)
 WORKDIR /app/api
 RUN pipenv install --deploy --ignore-pipfile
 
 RUN pipenv install gunicorn
 
-# Builder frontend
+# Build frontend
 WORKDIR /app/frontend
 RUN npm install && npm run build
 
-# Copier le build frontend dans un dossier nginx
+# Copy the frontend build to the nginx folder
 RUN mkdir -p /var/www/frontend
 RUN cp -r dist/* /var/www/frontend/
 
-# Copier config Nginx
+# Copy the nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copier script de démarrage
+# Copy the entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Exposer les ports
+# Expose the ports
 EXPOSE 80 8000
 
 # Entrypoint
