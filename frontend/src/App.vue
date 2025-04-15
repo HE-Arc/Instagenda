@@ -41,14 +41,14 @@ const hideLayoutOnRoutes = ['/login', '/register']
   </footer>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .app-header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 70px;
-  background: white;
+  background: $white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
   padding: 0 2rem;
@@ -78,7 +78,7 @@ const hideLayoutOnRoutes = ['/login', '/register']
   left: 0;
   width: 100%;
   height: 70px;
-  background: white;
+  background: $white;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
   display: flex;

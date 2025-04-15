@@ -26,6 +26,7 @@ const postContent = ref('');
 const postImage = ref('');
 const postDate = ref('');
 const postTime = ref('');
+const groupId = ref(null);
 const files = ref([]);
 const existingImages = ref([]);
 const uploaderRef = ref(null);
@@ -55,9 +56,15 @@ if (props.update) {
       postName.value = response.data.name;
       postContent.value = response.data.caption;
 
-      const [datePart, timePart] = response.data.date_publication.split('T');
-      postDate.value = datePart.replace(/-/g, '/');
-      postTime.value = timePart.slice(0, 5);
+      groupId.value = response.data.group_owner;
+
+      const utcDate = new Date(response.data.date_publication);
+      const year = utcDate.getFullYear();
+      const month = String(utcDate.getMonth() + 1).padStart(2, '0');
+      const day = String(utcDate.getDate()).padStart(2, '0');
+
+      postDate.value = `${year}/${month}/${day}`;
+      postTime.value = utcDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
 
       // Get existing images
       if (response.data.images && response.data.images.length > 0) {
@@ -114,9 +121,7 @@ const handleAction = async () => {
 
     // Add all images in the order of the draggable
     files.value.forEach((file) => {
-      if (!file.id) {
-        formData.append('uploaded_images', file);
-      }
+      formData.append('uploaded_images', file);
     });
 
     if (!props.update) {
@@ -135,10 +140,16 @@ const handleAction = async () => {
       postDate.value = '';
       postTime.value = '';
       files.value = [];
+
+      router.push('/groups/' + route.params.id);
     } else {
-      console.log("Update post")
+      await axios.put(`/posts/${props.postid}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      router.push('/groups/' + groupId.value);
     }
-    router.push('/groups/' + route.params.id);
   } catch (error) {
     const action = props.update ? 'la mise à jour' : 'la création';
     errorMessage.value = `Erreur lors de ${action} du post : ` + (error.response?.data.error || error);
@@ -146,7 +157,18 @@ const handleAction = async () => {
 };
 
 const onFilesAdded = (newFiles) => {
-  files.value = files.value.concat(Array.from(newFiles));
+  const uniqueNewFiles = Array.from(newFiles).filter(newFile => {
+    return !files.value.some(existingFile =>
+      existingFile.name === newFile.name &&
+      existingFile.size === newFile.size
+    );
+  });
+
+  if (uniqueNewFiles.length < newFiles.length) {
+    errorMessage.value = 'Certaines images seront ignorées car elles sont déjà présentes dans la liste.';
+  }
+
+  files.value = files.value.concat(uniqueNewFiles);
 };
 
 const onFilesRemoved = (removedFiles) => {
@@ -170,12 +192,21 @@ const getObjectUrl = (file) => {
 </script>
 <template>
   <main class="edit-post-container">
-    <h5>{{props.title}}</h5>
+    <QBtn
+      flat
+      dense
+      icon="arrow_back"
+      label="Retour"
+      @click="router.back()"
+      class="back-btn"
+      color="primary"
+    />
+    <h5 class="title">{{props.title}}</h5>
     <QInput v-model="postName" label="Nom du post" filled :rules="[val => !!val || 'Le nom est requis']" class="q-mb-md" />
     <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis']" type="textarea" class="q-mb-md" />
     <q-uploader
       ref="uploaderRef"
-      label="Photos du post"
+      label="Photos du post (format recommandé 1:1)"
       @added="onFilesAdded"
       @removed="onFilesRemoved"
       :auto-upload="false"
@@ -210,6 +241,15 @@ const getObjectUrl = (file) => {
   margin: 0 auto;
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+.title {
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  align-self: flex-start;
+  margin-bottom: 10px;
 }
 
 .date-time-container {

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -13,6 +12,7 @@ import requests
 from django.conf import settings
 from django.utils.timezone import make_aware
 from datetime import datetime
+from django.utils.timezone import now
 from celery import current_app
 from .tasks import publish_post
 import pytz
@@ -32,8 +32,8 @@ class AuthViewSet(viewsets.ViewSet):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return Response({"message": "User logged in"}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Utilisateur connecté"}, status=status.HTTP_200_OK)
+        return Response({"error": "Champs invalides"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def register(self, request):
@@ -41,20 +41,20 @@ class AuthViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.save()
             login(request, user)
-            return Response({"message": "User registered"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Utilisateur enregistré"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def logout(self, request):
         if request.user.is_authenticated:
             logout(request)
-            return Response({"message": "User logged out"}, status=status.HTTP_200_OK)
-        return Response({"error": "User not logged in"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Utilisateur déconnecté"}, status=status.HTTP_200_OK)
+        return Response({"error": "Utilisateur non déconnecté"}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=False, methods=['get'])
     def profile(self, request):
         if not request.user or request.user.is_anonymous:
-            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Utilisateur non authentifié"}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -64,7 +64,7 @@ class IgViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def connection(self, request):
         if not request.user or request.user.is_anonymous:
-            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Utilisateur non authentifié"}, status=status.HTTP_401_UNAUTHORIZED)
         code = request.data.get('code')
 
         client_id = settings.INSTAGRAM_CLIENT_ID
@@ -114,6 +114,58 @@ class IgViewSet(viewsets.ViewSet):
             return Response(long_lived_response.json(), status=long_lived_response.status_code)
         return Response(response.json(), status=response.status_code)
     
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def status(self, request):
+        try:
+            ig_profile = request.user.profile
+
+            if ig_profile.instagram_access_token and ig_profile.instagram_user_id:
+                # Get username from Meta API if we don't have it already
+                if not ig_profile.instagram_username:
+                    url = f"{settings.INSTAGRAM_API_URL}/{ig_profile.instagram_user_id}"
+                    params = {
+                        "fields": "username",
+                        "access_token": ig_profile.instagram_access_token
+                    }
+
+                    response = requests.get(url, params=params)
+                    if response.status_code == 200:
+                        data = response.json()
+                        username = data.get("username")
+                        if username:
+                            ig_profile.instagram_username = username
+                            ig_profile.save()
+                    else:
+                        return Response({
+                            "connected": False,
+                            "error": "Erreur lors de la récupération du nom d'utilisateur depuis Instagram."
+                        }, status=response.status_code)
+                return Response({
+                    "connected": True,
+                    "username": ig_profile.instagram_username
+                })
+
+        except IgProfile.DoesNotExist:
+            pass
+
+        return Response({
+            "connected": False,
+            "message": "Aucun compte Instagram lié"
+        })
+
+
+    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    def disconnect(self, request):
+        try:
+            ig_profile = request.user.profile
+            ig_profile.instagram_access_token = None
+            ig_profile.instagram_user_id = None
+            ig_profile.instagram_username = None
+            ig_profile.save()
+            return Response({"message": "Compte Instagram déconnecté avec succès."})
+        except IgProfile.DoesNotExist:
+            return Response({"error": "Aucun compte à déconnecter."}, status=404)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -124,15 +176,14 @@ class UserViewSet(viewsets.ModelViewSet):
         data = UserSerializer(user).data
 
         if user.id != request.user.id:
-            return Response({'error': 'You are not allowed to view this user'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas autorisé à accéder à cet utilisateur.'}, status=status.HTTP_403_FORBIDDEN)
         
         return Response(data)
     
     def update(self, request, pk=None):
-        """ Met à jour l'utilisateur (sans changer le mot de passe) """
-        user = request.user  # Récupère l'utilisateur connecté
+        user = request.user
 
-        serializer = UserSerializer(user, data=request.data, partial=True)  # Permet une mise à jour partielle
+        serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -141,7 +192,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def change_password(self, request):
-        """ Change le mot de passe de l'utilisateur """
         serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -157,10 +207,8 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = self.get_object()
         data = GroupSerializer(group).data
 
-        is_owner = data["owner"]["id"] == request.user.id
-        is_worker = any(worker["id"] == request.user.id for worker in data["workers"])
-        if not (is_owner or is_worker):
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+        if not hasRights(group, request):
+            return Response({'error': 'Vous n\'êtes pas un membre du groupe.'}, status=status.HTTP_403_FORBIDDEN)
         
         return Response(data)
 
@@ -175,7 +223,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = self.get_object()
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
 
         self.perform_destroy(group)
         return Response({'status': 'Group deleted'}, status=status.HTTP_204_NO_CONTENT)
@@ -186,13 +234,13 @@ class GroupViewSet(viewsets.ModelViewSet):
         user_username = request.data.get('username')
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(username=user_username)
 
             if group.workers.filter(id=user.id).exists():
-                return Response({'error': 'User is already in the group'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'L\'utilisateur est déjà dans le groupe'}, status=status.HTTP_400_BAD_REQUEST)
             
             group.workers.add(user)
             return Response({'user': UserSerializer(user).data})
@@ -205,14 +253,14 @@ class GroupViewSet(viewsets.ModelViewSet):
         user_id = request.data.get('user_id')
 
         if group.owner.id != request.user.id:
-            return Response({'error': 'You are not the owner of this group'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas le propriétaire du groupe.'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(id=user_id)
             group.workers.remove(user)
-            return Response({'status': 'User removed'})
+            return Response({'status': 'Utilisateur enlevé'})
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=400)
+            return Response({'error': 'Utilisateur introuvable'}, status=400)
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -225,11 +273,13 @@ class PostViewSet(viewsets.ModelViewSet):
         caption = self.request.data.get("caption")
         date_str = self.request.data.get("date_publication")
         group_id = self.request.data.get("group_id")
+        group_owner = Group.objects.get(id=group_id)
+
+        if not hasRights(group_owner, self.request):
+            return Response({'error': 'Vous n\'êtes pas autorisé à créer un post dans ce groupe'}, status=status.HTTP_403_FORBIDDEN)
 
         date_publication_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
         date_publication = date_publication_aw.astimezone(pytz.utc)
-
-        group_owner = Group.objects.get(id=group_id)
 
         post = serializer.save(name=name, caption=caption, group_owner=group_owner, date_publication=date_publication)
 
@@ -240,15 +290,85 @@ class PostViewSet(viewsets.ModelViewSet):
 
         post.celery_task_id = task.id
         post.save()
+
+    def retrieve(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if not hasRights(group, request):
+            return Response(
+                {'error': 'Vous n\'êtes pas autorisé à accéder à ce post'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(post)
+        return Response(serializer.data)
+      
+    def update(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if not hasRights(group, request):
+            return Response({'error': 'Vous n\'êtes pas autorisé à éditer ce post'}, status=status.HTTP_403_FORBIDDEN)
+        
+        old_date = post.date_publication
+
+        serializer = PostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            updated_post = serializer.save()
+
+            date_str = request.data.get("date_publication")
+            new_date_aw = make_aware(datetime.strptime(date_str, "%Y-%m-%d %H:%M"), timezone=pytz.timezone('UTC'))
+            new_date = new_date_aw.astimezone(pytz.utc)
+
+            # Need to redo the celery task if the publication date has changed
+            if old_date != new_date and new_date > now():
+                if post.celery_task_id:
+                    try:
+                        current_app.control.revoke(post.celery_task_id, terminate=True)
+                    except Exception as e:
+                        pass
+
+                task = publish_post.apply_async(args=[post.id], eta=new_date)
+                updated_post.celery_task_id = task.id
+                updated_post.date_publication = new_date
+
+            uploaded_images = request.FILES.getlist("uploaded_images")
+            if uploaded_images:
+                old_images = list(PostImage.objects.filter(post=post).order_by('order'))
+
+                is_different = (
+                    len(uploaded_images) != len(old_images) or
+                    any(
+                        uploaded_images[i].name != old_images[i].image.name.split('/')[-1] or
+                        uploaded_images[i].size != old_images[i].image.size
+                        for i in range(min(len(uploaded_images), len(old_images)))
+                    )
+                )
+
+                # Need to redo the images list if the current one is different from the request data
+                if is_different:
+                    for image in old_images:
+                        try:
+                            image.image.delete(save=False)
+                        except Exception as e:
+                            print(f"Erreur lors de la suppression d'une image : {e}")
+                    PostImage.objects.filter(post=post).delete()
+
+                    for order, image in enumerate(uploaded_images):
+                        PostImage.objects.create(post=post, image=image, order=order)
+
+            updated_post.status = "unvalidated"
+            updated_post.save()
+            return Response(PostSerializer(updated_post).data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def destroy(self, request, *args, **kwargs):
         post = self.get_object()
         group = post.group_owner
 
-        is_owner = group.owner.id == request.user.id
-        is_worker = group.workers.filter(id=request.user.id).exists()
-        
-        if not (is_owner or is_worker):
+        if not hasRights(group, request):
             return Response({'error': 'Vous n\'êtes pas autorisé à supprimer ce post'}, status=status.HTTP_403_FORBIDDEN)
         
         # Delete Celery task if it exists
@@ -275,6 +395,7 @@ class PostViewSet(viewsets.ModelViewSet):
         
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+    # Can't list all posts
     def list(self, request, *args, **kwargs):
         return Response({'detail': 'Accès à cet endpoint non autorisé.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         
@@ -284,3 +405,46 @@ class PostViewSet(viewsets.ModelViewSet):
         images = PostImage.objects.filter(post=post)
         serializer = PostImageSerializer(images, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['put'])
+    def validate(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'Vous n\'êtes pas autorisé à valider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # The user need to have a linked instagram account to validate a post
+        try:
+            ig_profile = request.user.profile
+            if not ig_profile.instagram_access_token or not ig_profile.instagram_user_id:
+                raise AttributeError()
+        except (IgProfile.DoesNotExist, AttributeError):
+            return Response(
+                {'error': 'Vous devez lier un compte Instagram avant de valider un post. Veuillez vous rendre dans la page de profil.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        post.status = 'validated'
+        post.save()
+
+        return Response({'message': 'Post validé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def unvalidate(self, request, pk=None):
+        post = self.get_object()
+        group = post.group_owner
+
+        if group.owner.id != request.user.id:
+            return Response({'error': 'Vous n\'êtes pas autorisé à dévalider ce post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        post.status = 'unvalidated'
+        post.save()
+
+        return Response({'message': 'Post dévalidé avec succès.', 'status': post.status}, status=status.HTTP_200_OK)
+
+# Function to check if the user from the request is the owner or a worker of the group that he wants to do something
+def hasRights(group, request):
+    is_owner = group.owner.id == request.user.id
+    is_worker = group.workers.filter(id=request.user.id).exists()
+    return is_owner or is_worker

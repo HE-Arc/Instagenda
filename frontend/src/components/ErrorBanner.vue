@@ -35,7 +35,7 @@ watch(errorMessage, (newValue) => {
   </QBanner>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .error-banner {
   position: fixed;
   top: 60px;
@@ -45,6 +45,6 @@ watch(errorMessage, (newValue) => {
   max-width: 600px;
   z-index: 1000;
   background-color: #C10015;
-  color: white;
+  color: $white;
 }
 </style>
