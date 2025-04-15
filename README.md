@@ -18,6 +18,7 @@ Instagenda is a project developed by students from HE-Arc engineering school in 
     - https://www.docker.com/get-started/
 
 ### How to start
+If you are on Windows see the How to start for Windows below
 
 1. **Clone the Repository**
     ```bash
@@ -36,6 +37,7 @@ Instagenda is a project developed by students from HE-Arc engineering school in 
    ```bash
    cd ./api
    docker compose up -d
+   docker run --name redis-server -d -p 6379:6379 redis
     ```
 4. **Install Python Dependencies**  
    ```bash
@@ -52,7 +54,51 @@ Instagenda is a project developed by students from HE-Arc engineering school in 
    python manage.py migrate
    python manage.py runserver
     ```
-7. **Set Up and Start the Frontend**  
+7. **Run the celery tool for planified tasks**
+    ```bash
+    celery -A instagenda worker --loglevel=debug
+    ```
+8. **Set Up and Start the Frontend**  
+   ```bash
+    cd ./frontend
+    npm i
+    npm run dev
+    ```
+
+### How to start - With Windows
+Celery tool is not working well in Windows,
+so you can follow the previous steps and run the 7 step in WSL.
+
+Or you can follow those steps and create the containers.
+
+1. **Clone the Repository**
+    ```bash
+   git clone git@github.com:HE-Arc/Instagenda.git
+    ```
+2. **Set Up Environment Variables**  
+   Copy `.env.exemple` to `.env` and update the configuration as needed.  
+   ```bash
+   cd ./api/instagenda
+   cp .env.exemple .env
+
+   cd ../../frontend
+   cp .env.exemple .env
+    ```
+    In each services path you need to change "localhost" by the name of the docker service.
+    
+    For example the DB_HOSTNAME is now "db" and not "localhost".
+3. **Install Python Dependencies**  
+   ```bash
+   cd ./api
+   pip install pipenv
+   pipenv install
+    ```
+4. **Start Docker Services**  
+   ```bash
+   cd ..
+   docker compose up --build
+    ```
+5. **Set Up and Start the Frontend**  
    ```bash
     cd ./frontend
     npm i
