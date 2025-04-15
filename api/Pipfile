@@ -4,19 +4,19 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-djangorestframework = "*"
-gunicorn = "*"
-psycopg2-binary = "*"
-python-dotenv = "*"
-django-cors-headers = "*"
-requests = "*"
-celery = "*"
-redis ="*"
-pytz = "*"
-pillow = "*"
+django = ">=5.2"
+djangorestframework = ">=3.16.0"
+gunicorn = ">=23.0.0"
+psycopg2-binary = ">=2.9.10"
+python-dotenv = ">=1.1.0"
+django-cors-headers = ">=4.7.0"
+requests = ">=2.32.3"
+celery = ">=5.5.1"
+redis =">=5.2.1"
+pytz = ">=2025.2"
+pillow = ">=11.2.1"
 
 [dev-packages]
 
 [requires]
-python_version = "*"
+python_version = ">=3.11.9"
