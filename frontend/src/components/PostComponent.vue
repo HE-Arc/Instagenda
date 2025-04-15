@@ -99,7 +99,7 @@ if (props.update) {
 }
 
 const handleAction = async () => {
-  if (!postName.value.trim() || !postContent.value.trim() || !postDate.value || !postTime.value || files.value.length === 0 || postName.value.length < 3 || postName.value.length > 50 || postContent.value.length < 3 || postContent.value.length > 255) {
+  if (!postName.value.trim() || !postContent.value.trim() || !postDate.value || !postTime.value || files.value.length === 0 || postName.value.length < 3 || postName.value.length > 50 || postContent.value.length > 255) {
     return;
   }
 
@@ -203,7 +203,7 @@ const getObjectUrl = (file) => {
     />
     <h5 class="title">{{props.title}}</h5>
     <QInput v-model="postName" label="Nom du post" filled :rules="[val => !!val || 'Le nom est requis', val => val.length >= 3 || 'Le nom doit contenir au moins 3 caractères', val => val.length <= 50 || 'Le nom doit contenir au maximum 50 caractères' ]" class="q-mb-md" />
-    <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis', val => val.length >= 3 || 'Le nom doit contenir au moins 3 caractères', val => val.length <= 255 || 'La description doit contenir au maximum 255 caractères']" type="textarea" class="q-mb-md" />
+    <QInput v-model="postContent" label="Contenu du post" filled :rules="[val => !!val || 'Le contenu est requis', val => val.length <= 255 || 'La description doit contenir au maximum 255 caractères']" type="textarea" class="q-mb-md" />
     <q-uploader
       ref="uploaderRef"
       label="Photos du post (format recommandé 1:1)"
