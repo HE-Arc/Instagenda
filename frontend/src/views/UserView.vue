@@ -10,9 +10,6 @@ const profile = ref('')
 const instagramStatus = ref({ connected: false })
 const instagramLoading = ref(true)
 const instagramError = ref(null)
-const currentPasswordRef = ref(null)
-const newPasswordRef = ref(null)
-const confirmPasswordRef = ref(null)
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -86,9 +83,6 @@ const savePassword = () => {
       currentPassword.value = ''
       newPassword.value = ''
       confirmPassword.value = ''
-      currentPasswordRef.value.resetValidation()
-      newPasswordRef.value.resetValidation()
-      confirmPasswordRef.value.resetValidation()
     })
     .catch((error) => {
       console.error(error)
@@ -169,15 +163,15 @@ const passwordMatchRule = (val) => val === newPassword.value || 'Les mots de pas
       <div class="card-body">
         <div class="input-group">
           <label for="current-password">Mot de passe actuel</label>
-          <QInput v-model="currentPassword" id="current-password" type="password" label="Mot de passe actuel" outlined ref="currentPasswordRef"/>
+          <QInput v-model="currentPassword" id="current-password" type="password" label="Mot de passe actuel" outlined/>
         </div>
         <div class="input-group">
           <label for="new-password">Nouveau mot de passe</label>
-          <QInput v-model="newPassword" id="new-password" type="password" label="Nouveau mot de passe" outlined :rules="[val => !!val || 'Le mot de passe est requis', val => val.length >= 6 || 'Le mot de passe doit contenir au moins 6 caractères', val => val.length <= 255 || 'Le mot de passe doit contenir au maximum 255 caractères' ]" ref="newPasswordRef" />
+          <QInput lazy-rules v-model="newPassword" id="new-password" type="password" label="Nouveau mot de passe" outlined :rules="[val => val.length >= 6 || 'Le mot de passe doit contenir au moins 6 caractères', val => val.length <= 255 || 'Le mot de passe doit contenir au maximum 255 caractères' ]" />
         </div>
         <div class="input-group">
           <label for="confirm-password">Confirmer le nouveau mot de passe</label>
-          <QInput v-model="confirmPassword" id="confirm-password" type="password" label="Confirmer le nouveau mot de passe" outlined :rules="[passwordMatchRule]" ref="confirmPasswordRef" />
+          <QInput v-model="confirmPassword" id="confirm-password" type="password" label="Confirmer le nouveau mot de passe" outlined :rules="[passwordMatchRule]" />
         </div>
         <div class="save-button">
           <QBtn label="Modifier" color="primary" @click="savePassword" />
