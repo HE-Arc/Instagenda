@@ -58,9 +58,13 @@ if (props.update) {
 
       groupId.value = response.data.group_owner;
 
-      const [datePart, timePart] = response.data.date_publication.split('T');
-      postDate.value = datePart.replace(/-/g, '/');
-      postTime.value = timePart.slice(0, 5);
+      const utcDate = new Date(response.data.date_publication);
+      const year = utcDate.getFullYear();
+      const month = String(utcDate.getMonth() + 1).padStart(2, '0');
+      const day = String(utcDate.getDate()).padStart(2, '0');
+
+      postDate.value = `${year}/${month}/${day}`;
+      postTime.value = utcDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
 
       // Get existing images
       if (response.data.images && response.data.images.length > 0) {
