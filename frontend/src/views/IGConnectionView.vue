@@ -14,7 +14,6 @@ async function postCode() {
 
 onMounted(async () => {
     await postCode()
-    // redirect to the user view
     router.push('/user')
 })
 </script>

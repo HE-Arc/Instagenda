@@ -46,6 +46,7 @@ def publish_post(post_id):
 
         container_id = None
 
+        # If the media_container has multiple images, create a carousel container
         if len(media_container) != 1:
             carousel_container = requests.post(
                 f"{settings.INSTAGRAM_API_URL}/{instagram_user_id}/media",
@@ -62,6 +63,7 @@ def publish_post(post_id):
                 return {"error": "Erreur lors de la création du conteneur carousel", "details": carousel_data}
             container_id = carousel_data["id"]
         else:
+            # If the media_container has only one image, use that ID directly
             container_id = media_container[0]
 
         if not container_id:
