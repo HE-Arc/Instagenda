@@ -194,8 +194,16 @@ class UserViewSet(viewsets.ModelViewSet):
     def change_password(self, request):
         serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Mot de passe mis à jour avec succès."}, status=status.HTTP_200_OK)
+            user = serializer.save()
+
+            # Reconnecter l'utilisateur
+            updated_user = authenticate(username=user.username, password=request.data.get("new_password"))
+            if updated_user:
+                login(request, updated_user)
+
+            return Response({"message": "Mot de passe mis à jour"}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GroupViewSet(viewsets.ModelViewSet):
     
