@@ -213,6 +213,7 @@ const getObjectUrl = (file) => {
       multiple
       no-thumbnails
       hide-upload-btn
+      accept=".png, .jpg, .jpeg"
       style="height: 150px; overflow-y: auto; width: 100%; margin-bottom: 20px;"
     />
     <h6>Photos ajoutées</h6>
