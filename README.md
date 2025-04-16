@@ -109,3 +109,6 @@ Or you can follow those steps and create the containers.
 In your Meta dashboard you need to configure a callback URI after the oauth call.
 
 You need to specify this frontend URI: https://your_domain/ig-connection
+
+### Certificate
+For Meta’s API to retrieve the images to be posted, they must be publicly available on the internet (i.e., hosted on a deployed website), and the HTTPS certificate must be free of major errors (such as “Chain issues: Incomplete” for example).
