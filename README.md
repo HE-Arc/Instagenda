@@ -108,4 +108,4 @@ Or you can follow those steps and create the containers.
 ### Callback URL in Meta Dashboard
 In your Meta dashboard you need to configure a callback URI after the oauth call.
 
-You need to specify our frontend URI: https://instagenda.k8s.ing.he-arc.ch/ig-connection
+You need to specify this frontend URI: https://your_domain/ig-connection
