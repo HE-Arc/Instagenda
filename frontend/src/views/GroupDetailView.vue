@@ -2,15 +2,7 @@
 import { ref, onBeforeMount, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
-import {
-  QBtn,
-  QDialog,
-  QCard,
-  QCardSection,
-  QCardActions,
-  QInput,
-  QIcon
-} from 'quasar'
+import {QBtn,QDialog,QCard,QCardSection,QCardActions,QInput,QIcon} from 'quasar'
 import router from '@/router'
 import { useAuth, useErrorMessage } from '@/components/store'
 

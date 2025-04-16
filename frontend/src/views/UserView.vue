@@ -94,7 +94,6 @@ const passwordMatchRule = (val) => val === newPassword.value || 'Les mots de pas
 
 <template>
   <div class="main">
-    <!-- COMPTE INSTAGRAM -->
     <div class="card">
       <div class="card-header">
         <h3>Compte Instagram</h3>
@@ -139,7 +138,6 @@ const passwordMatchRule = (val) => val === newPassword.value || 'Les mots de pas
       </div>
     </div>
 
-    <!-- INFOS PROFIL -->
     <div class="card profile-card">
       <div class="card-header">
         <h3>Informations sur le profil</h3>
@@ -155,7 +153,6 @@ const passwordMatchRule = (val) => val === newPassword.value || 'Les mots de pas
       </div>
     </div>
 
-    <!-- MOT DE PASSE -->
     <div class="card password-card">
       <div class="card-header">
         <h3>Modifier le mot de passe</h3>

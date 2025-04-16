@@ -86,7 +86,6 @@ const hideLayoutOnRoutes = ['/login', '/register']
   justify-content: center;
 }
 
-/* MAIN */
 .app-main {
   padding: 20px;
   margin-top: 70px;

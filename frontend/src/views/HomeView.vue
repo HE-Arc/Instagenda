@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { QBtn, QDialog, QCard, QCardSection, QCardActions, QInput } from 'quasar';
-import { useAuth, useErrorMessage } from '@/components/store'
+import { useAuth, useErrorMessage } from '@/components/store';
 
 const isModalOpen = ref(false);
 const groupName = ref('');
@@ -12,7 +12,7 @@ const router = useRouter();
 const slideIndex = ref(0);
 const itemsPerSlide = 3;
 const { user } = useAuth();
-const { errorMessage } = useErrorMessage()
+const { errorMessage } = useErrorMessage();
 
 const openModal = () => {
   isModalOpen.value = true;
@@ -92,6 +92,30 @@ const isOwner = (group) => {
   return group.owner.id === user.value.id;
 };
 
+const getClosestPost = (group) => {
+  if (!group.posts || group.posts.length === 0) return null;
+
+  const now = new Date();
+  const postsWithDate = group.posts.map(p => ({ ...p, dateObj: new Date(p.date_publication) }));
+
+  const future = postsWithDate.filter(p => p.dateObj > now).sort((a, b) => a.dateObj - b.dateObj);
+  if (future.length > 0) return future[0];
+
+  const past = postsWithDate.filter(p => p.dateObj <= now).sort((a, b) => b.dateObj - a.dateObj);
+  return past[0] || null;
+};
+
+const getClosestPostImage = (group) => {
+  const post = getClosestPost(group);
+  if (post && post.images && post.images.length > 0 && post.images[0].image_url) {
+    try {
+      return new URL(post.images[0].image_url, import.meta.env.VITE_API_URL).href;
+    } catch {
+      return "/assets/images/logo.png";
+    }
+  }
+  return "/assets/images/logo.png";
+};
 </script>
 
 <template>
@@ -110,7 +134,11 @@ const isOwner = (group) => {
             <div class="card-header">
               <h5 class="team-name">{{ group.name }}</h5>
               <QBtn v-if="isOwner(group)" flat dense round color="primary" icon="delete"
-              class="delete-btn" @click.stop="deleteGroup(group.id)"/>
+                class="delete-btn" @click.stop="deleteGroup(group.id)" />
+            </div>
+
+            <div class="image-wrapper">
+              <img :src="getClosestPostImage(group)" alt="Image de groupe" class="group-image" />
             </div>
 
             <div class="role-label">
@@ -145,8 +173,8 @@ const isOwner = (group) => {
   background-color: $secondary;
   border-radius: 8px;
   padding: 20px;
-  border : solid 0.5px;
-  border-color : $dark;
+  border: solid 0.5px;
+  border-color: $dark;
 }
 
 .container-header {
@@ -186,7 +214,8 @@ const isOwner = (group) => {
 
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
+  gap: 10px;
 
   &:hover {
     transform: scale(1.03);
@@ -201,8 +230,25 @@ const isOwner = (group) => {
   width: 100%;
 }
 
+.image-wrapper {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.group-image {
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 8px;
+  max-width: 100%;
+}
+
 .role-label {
-  margin-top: auto; /* Pousse ce texte en bas */
   font-size: 14px;
   font-weight: bold;
   color: $dark;

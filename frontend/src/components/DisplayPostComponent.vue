@@ -1,59 +1,3 @@
-<template>
-  <main class="preview-container">
-    <QBtn
-      flat
-      dense
-      icon="arrow_back"
-      label="Retour"
-      @click="router.back()"
-      class="back-btn"
-      color="primary"
-    />
-
-    <div v-if="post" class="card">
-      <!-- Images Carousel -->
-      <QCarousel
-        v-if="images.length"
-        :key="images.length"
-        v-model="activeSlide"
-        animated
-        swipeable
-        infinite
-        class="carousel square-carousel"
-      >
-        <QCarouselSlide
-          v-for="(img, index) in images"
-          :key="img.id"
-          :name="index"
-          class="carousel-slide"
-        >
-          <img :src="img.url" class="carousel-image" />
-        </QCarouselSlide>
-      </QCarousel>
-
-      <!-- Custom Carousel Controls (dots) -->
-      <div class="carousel-controls" v-if="images.length > 1">
-        <span
-          v-for="(img, index) in images"
-          :key="'dot-' + img.id"
-          class="dot"
-          :class="{ active: activeSlide === index }"
-          @click="activeSlide = index"
-        ></span>
-      </div>
-
-      <!-- Post Details -->
-      <div class="post-details">
-        <p class="caption">{{ post.caption }}</p>
-        <p class="date">Planifié pour : {{ formatDate(post.date_publication) }}</p>
-      </div>
-    </div>
-
-    <div v-else class="loading">
-      <p>Chargement...</p>
-    </div>
-  </main>
-</template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -106,6 +50,63 @@ const formatDate = (isoString) => {
   });
 };
 </script>
+
+<template>
+  <main class="preview-container">
+    <QBtn
+      flat
+      dense
+      icon="arrow_back"
+      label="Retour"
+      @click="router.back()"
+      class="back-btn"
+      color="primary"
+    />
+
+    <div v-if="post" class="card">
+
+      <QCarousel
+        v-if="images.length"
+        :key="images.length"
+        v-model="activeSlide"
+        animated
+        swipeable
+        infinite
+        class="carousel square-carousel"
+      >
+        <QCarouselSlide
+          v-for="(img, index) in images"
+          :key="img.id"
+          :name="index"
+          class="carousel-slide"
+        >
+          <img :src="img.url" class="carousel-image" />
+        </QCarouselSlide>
+      </QCarousel>
+
+      <!-- Custom Carousel Controls (dots) -->
+      <div class="carousel-controls" v-if="images.length > 1">
+        <span
+          v-for="(img, index) in images"
+          :key="'dot-' + img.id"
+          class="dot"
+          :class="{ active: activeSlide === index }"
+          @click="activeSlide = index"
+        ></span>
+      </div>
+
+      <!-- Post Details -->
+      <div class="post-details">
+        <p class="caption">{{ post.caption }}</p>
+        <p class="date">Planifié pour : {{ formatDate(post.date_publication) }}</p>
+      </div>
+    </div>
+
+    <div v-else class="loading">
+      <p>Chargement...</p>
+    </div>
+  </main>
+</template>
 
 <style scoped lang="scss">
 .preview-container {

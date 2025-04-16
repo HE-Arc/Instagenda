@@ -18,7 +18,6 @@ from .tasks import publish_post
 import pytz
 import os
 
-# Create your views here.
 def backend_status(request):
     return JsonResponse({"status": 'Working!'})
 
@@ -196,7 +195,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             user = serializer.save()
 
-            # Reconnecter l'utilisateur
             updated_user = authenticate(username=user.username, password=request.data.get("new_password"))
             if updated_user:
                 login(request, updated_user)

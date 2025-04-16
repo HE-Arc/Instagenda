@@ -32,14 +32,12 @@ const login = async () => {
 <template>
   <main>
     <div class="bg-white flex flex-center column container">
-      <!-- Logo -->
       <QImg
         src="/assets/images/logo_slogan.png"
         class="logo"
         fit="contain"
       />
 
-      <!-- Form -->
       <div class="form-container">
         <QInput v-model="username" label="Nom d'utilisateur" rounded outlined color="primary" class="q-mb-md"/>
         <QInput v-model="password" label="Mot de passe" type="password" rounded outlined color="primary" class="q-mb-md"/>
@@ -47,7 +45,6 @@ const login = async () => {
         <QBtn label="Se connecter" @click="login" class="full-width btn-login" color="primary" rounded/>
       </div>
 
-      <!-- Register -->
       <div class="register-container">
         <p>Pas encore de compte ? <span class="register-text" @click="router.push('/register')">S'enregistrer</span></p>
       </div>
